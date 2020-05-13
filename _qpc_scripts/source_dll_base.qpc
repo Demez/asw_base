@@ -1,0 +1,27 @@
+// ---------------------------------------------------------------
+// source_dll_base.qpc
+// ---------------------------------------------------------------
+macro OUT_BIN_EXT "$_BIN_EXT" [!$OUT_BIN_EXT]
+
+macro SRC_DIR [!$SRC_DIR]
+
+include "$SRC_DIR/_qpc_scripts/source_dll_exe_base.qpc"
+
+configuration
+{
+	general
+	{
+		configuration_type "dynamic_library"
+	}
+}
+
+files
+{
+	folder "Source Files"
+	{
+		"$SRC_DIR/common/debug_dll_check.cpp"
+		{
+			precompiled_header "none"
+		}
+	}
+}

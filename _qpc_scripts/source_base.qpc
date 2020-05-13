@@ -1,0 +1,91 @@
+// ---------------------------------------------------------------
+// source_base.qpc
+// ---------------------------------------------------------------
+macro SRC_DIR  [!$SRC_DIR]
+macro GAMENAME [!$GAMENAME]
+
+macro WIN32	            "1"        [$WINDOWS && $I386]
+macro WIN64	            "1"        [$WINDOWS && $AMD64]
+
+macro LINUX32	        "1"        [$LINUX && $I386]
+macro LINUX64	        "1"        [$LINUX && $AMD64]
+
+macro 32BITS	        "1"        [$I386]
+macro 64BITS	        "1"        [$AMD64]
+
+macro PLATSUBDIR        ""
+macro PLATSUBDIR        "/x64"     [$WIN64]
+macro PLATSUBDIR        "/."       [$X360]
+macro PLATSUBDIR        "/linux32" [$LINUX32]
+macro PLATSUBDIR        "/osx32"   [$OSX32]
+
+macro OUT_BIN_NAME "$SCRIPT_NAME" [!$OUT_BIN_NAME]
+
+macro LIBPUBLIC "$SRC_DIR/lib/public$PLATSUBDIR"
+macro LIBCOMMON "$SRC_DIR/lib/common$PLATSUBDIR"
+
+macro BUILD_DIR         "$QPC_CONFIG/$GAMENAME$PLATSUBDIR"  [!$BUILD_DIR]
+
+include "$SRC_DIR/_qpc_scripts/source_win32_base.qpc" [$WINDOWS]
+
+configuration
+{
+	general
+	{
+		out_dir "./$BUILD_DIR"
+		build_dir "./$BUILD_DIR"
+		
+		language "cpp"
+		
+		include_directories
+		{
+			"$SRC_DIR/common"
+			"$SRC_DIR/public"
+			"$SRC_DIR/public/tier0"
+			"$SRC_DIR/public/tier1"
+		}
+		
+		library_directories
+		{
+			"$LIBCOMMON"
+			"$LIBPUBLIC"
+		}
+	}
+	
+	compiler
+	{
+		preprocessor_definitions
+		{
+			"DEV_BUILD" [!$PUBLISH]
+			"_PROFILE" [$PROFILE && !$RETAIL]
+			
+			"PLATFORM_64BITS" [$64BITS]
+			
+			"SUPPRESS_INVALID_PARAMETER_NO_INFO" "_HAS_ITERATOR_DEBUGGING=0" "_DEBUG" "DEBUG" [$DEBUG]
+			"NDEBUG" [$RELEASE]
+			
+			"RETAIL_ASSERTS" [$RETAIL && $RETAILASSERTS]
+			"RELEASEASSERTS" [$RELEASEASSERTS && $RELEASE]
+			
+			"FRAME_POINTER_OMISSION_DISABLED"
+			"MEMOVERRIDE_MODULE=$PROJECT_NAME"
+			
+			"_BIN_EXT=$_BIN_EXT"
+			"DLLNAME=$OUT_BIN_NAME"
+			
+			"STAGING_ONLY" [$STAGING_ONLY]
+			"TF_BETA" [$TF_BETA]
+			"RAD_TELEMETRY_DISABLED" [$SOURCESDK]
+			"VPC"
+			
+			// video base
+			"BINK_VIDEO"
+			"AVI_VIDEO"
+			"WMV_VIDEO"
+		}
+		
+		precompiled_header "none"
+	}
+}
+
+

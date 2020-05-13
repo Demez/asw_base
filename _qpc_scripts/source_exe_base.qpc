@@ -1,0 +1,15 @@
+// ---------------------------------------------------------------
+// source_exe_base.qpc
+// ---------------------------------------------------------------
+macro SRC_DIR [!$SRC_DIR]
+
+include "$SRC_DIR/_qpc_scripts/source_dll_exe_base.qpc"
+
+configuration
+{
+	general
+	{
+		configuration_type "application"
+	}
+}
+

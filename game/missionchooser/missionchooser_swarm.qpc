@@ -1,0 +1,223 @@
+// ---------------------------------------------------------------
+// missionchooser_swarm.qpc
+// ---------------------------------------------------------------
+macro PROJECT_NAME "MissionChooser"
+
+macro SRC_DIR "../.."
+macro GAMENAME "mod_swarm"
+macro OUT_BIN_NAME "missionchooser"
+macro OUT_BIN_DIR "$SRC_DIR/../game/$GAMENAME/bin"
+
+include "$SRC_DIR/_qpc_scripts/source_dll_base.qpc"
+
+configuration
+{
+	general
+	{
+		out_dir "./$QPC_CONFIG_$GAMENAME"
+		
+		include_directories
+		{
+			"./"
+			"./vgui"
+			"./vgui/dialogs"
+			"./TileSource"
+			"./keyvalues_editor"
+		}
+	}
+	
+	compiler
+	{
+		preprocessor_definitions
+		{
+			"NO_STRING_T"
+			"VECTOR"
+			"VERSION_SAFE_STEAM_API_INTERFACES"
+			"PROTECTED_THINGS_ENABLE"
+			"strncpy=use_Q_strncpy_instead"
+			"_snprintf=use_Q_snprintf_instead"
+		}
+	}
+	
+	linker
+	{
+		ignore_import_library "true"
+		
+		libraries
+		{
+			"winmm.lib"
+			"bitmap"
+			"bonesetup"
+			"dmxloader"
+			"fgdlib"
+			"$LIBCOMMON/jpeglib"
+			"mathlib"
+			"matsys_controls"
+			"tier2"
+			"tier3"
+			"vbsp2lib"
+			"vgui_controls"
+			"vtf"
+			"steam_api"
+		}
+	}
+}
+
+files
+{
+	folder "Public Header Files"
+	{
+		"$SRC_DIR/public/chunkfile.h"
+		"$SRC_DIR/public/missionchooser/iasw_mission_chooser.h"
+		"$SRC_DIR/public/missionchooser/iasw_mission_chooser_source.h"
+		"$SRC_DIR/public/missionchooser/iasw_random_missions.h"
+		"$SRC_DIR/public/missionchooser/iasw_spawn_selection.h"
+		"$SRC_DIR/public/tier1/interface.h"
+	}
+
+	folder "Source Files"
+	{
+		folder "keyvalues_editor"
+		{
+			"keyvalues_editor/kv_combo_leaf_panel.cpp"
+			"keyvalues_editor/kv_combo_leaf_panel.h"
+			"keyvalues_editor/kv_editor.cpp"
+			"keyvalues_editor/kv_editor.h"
+			"keyvalues_editor/kv_editor_base_panel.cpp"
+			"keyvalues_editor/kv_editor_base_panel.h"
+			"keyvalues_editor/kv_editor_frame.cpp"
+			"keyvalues_editor/kv_editor_frame.h"
+			"keyvalues_editor/kv_fit_children_panel.cpp"
+			"keyvalues_editor/kv_fit_children_panel.h"
+			"keyvalues_editor/kv_leaf_panel.cpp"
+			"keyvalues_editor/kv_leaf_panel.h"
+			"keyvalues_editor/kv_node_panel.cpp"
+			"keyvalues_editor/kv_node_panel.h"
+			"$SRC_DIR/game/missionchooser/vgui/location_editor/location_editor_frame.cpp"
+			"$SRC_DIR/game/missionchooser/vgui/location_editor/location_editor_frame.h"
+			"$SRC_DIR/game/missionchooser/vgui/location_editor/location_layout_panel.cpp"
+			"$SRC_DIR/game/missionchooser/vgui/location_editor/location_layout_panel.h"
+			"$SRC_DIR/game/missionchooser/vgui/location_editor/mission_txt_leaf_panel.cpp"
+			"$SRC_DIR/game/missionchooser/vgui/location_editor/mission_txt_leaf_panel.h"
+			"$SRC_DIR/game/missionchooser/vgui/mission_editor/theme_room_picker.cpp"
+			"$SRC_DIR/game/missionchooser/vgui/mission_editor/theme_room_picker.h"
+		}
+
+		folder "layout_system"
+		{
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_actions.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_actions.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_class_factories.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_class_factories.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_class_interfaces.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_enum.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_enum.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_expressions.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_expressions.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_layout_system.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_layout_system.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_listeners.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_listeners.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_mission_preprocessor.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_mission_preprocessor.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_ranges.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_ranges.h"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_rule.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system/tilegen_rule.h"
+		}
+
+		folder "layout_system_editor"
+		{
+			"$SRC_DIR/game/missionchooser/layout_system_editor/layout_system_kv_editor.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/layout_system_kv_editor.h"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/mission_panel.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/mission_panel.h"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/node_panel.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/node_panel.h"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/rule_instance_node_panel.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/rule_instance_node_panel.h"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/rule_instance_parameter_panel.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/rule_instance_parameter_panel.h"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/state_node_panel.cpp"
+			"$SRC_DIR/game/missionchooser/layout_system_editor/state_node_panel.h"
+		}
+
+		folder "TileSource"
+		{
+			"TileSource/LevelTheme.cpp"
+			"TileSource/LevelTheme.h"
+			"TileSource/MapLayout.cpp"
+			"TileSource/MapLayout.h"
+			"TileSource/Room.cpp"
+			"TileSource/Room.h"
+			"TileSource/RoomTemplate.cpp"
+			"TileSource/RoomTemplate.h"
+			"TileSource/TagList.cpp"
+			"TileSource/TagList.h"
+		}
+
+		folder "vgui"
+		{
+			folder "Dialogs"
+			{
+				"vgui/dialogs/ExitEditDialog.cpp"
+				"vgui/dialogs/ExitEditDialog.h"
+				"vgui/dialogs/RoomTemplateEditDialog.cpp"
+				"vgui/dialogs/RoomTemplateEditDialog.h"
+				"vgui/dialogs/ThemeEditDialog.cpp"
+				"vgui/dialogs/ThemeEditDialog.h"
+				"vgui/dialogs/ThemesDialog.cpp"
+				"vgui/dialogs/ThemesDialog.h"
+				"vgui/dialogs/TileGenDialog.cpp"
+				"vgui/dialogs/TileGenDialog.h"
+			}
+
+			"vgui/MapLayoutPanel.cpp"
+			"vgui/MapLayoutPanel.h"
+			"vgui/missionchooser_tgaimagepanel.cpp"
+			"vgui/missionchooser_tgaimagepanel.h"
+			"vgui/npc_spawns_panel.cpp"
+			"vgui/npc_spawns_panel.h"
+			"vgui/PlacedRoomTemplatePanel.cpp"
+			"vgui/PlacedRoomTemplatePanel.h"
+			"vgui/RoomTemplateListPanel.cpp"
+			"vgui/RoomTemplateListPanel.h"
+			"vgui/RoomTemplatePanel.cpp"
+			"vgui/RoomTemplatePanel.h"
+			"vgui/ScrollingWindow.cpp"
+			"vgui/ScrollingWindow.h"
+			"vgui/tilegen_pages.cpp"
+			"vgui/tilegen_pages.h"
+			"vgui/ToggleExitsPanel.cpp"
+			"vgui/ToggleExitsPanel.h"
+			"$SRC_DIR/public/vgui_controls/vgui_controls.cpp"
+		}
+
+		"asw_key_values_database.cpp"
+		"asw_key_values_database.h"
+		"asw_location_grid.cpp"
+		"asw_location_grid.h"
+		"asw_map_builder.cpp"
+		"asw_map_builder.h"
+		"asw_mission_chooser.cpp"
+		"asw_mission_chooser.h"
+		"asw_mission_chooser_source_local.cpp"
+		"asw_mission_chooser_source_local.h"
+		"asw_mission_text_database.cpp"
+		"asw_mission_text_database.h"
+		"asw_npcs.cpp"
+		"asw_npcs.h"
+		"asw_random_missions.cpp"
+		"asw_random_missions.h"
+		"asw_spawn_selection.cpp"
+		"asw_spawn_selection.h"
+		"asw_system.cpp"
+		"asw_system.h"
+		"$SRC_DIR/public/chunkfile.cpp"
+		"tile_check.cpp"
+		"tile_check.h"
+		"tilegen_core.h"
+		"VMFExporter.cpp"
+		"VMFExporter.h"
+	}
+}

@@ -1,0 +1,83 @@
+// ---------------------------------------------------------------
+// shaderlib.qpc
+// ---------------------------------------------------------------
+macro PROJECT_NAME "ShaderLib"
+
+macro SRC_DIR "../.."
+macro SHADERLIBDIR "."
+
+include "$SRC_DIR/_qpc_scripts/source_lib_base.qpc"
+
+configuration
+{
+	general
+	{
+		include_directories
+		{
+			"../"
+		}
+	}
+	
+	compiler
+	{
+		preprocessor_definitions
+		{
+			"FAST_MATERIALVAR_ACCESS"
+		}
+	}
+}
+
+files
+{
+	folder "External Header Files"
+	{
+		"$SRC_DIR/public/tier0/basetypes.h"
+		"$SRC_DIR/public/tier0/commonmacros.h"
+		"$SRC_DIR/public/tier0/dbg.h"
+		"$SRC_DIR/public/tier0/fasttimer.h"
+		"$SRC_DIR/public/appframework/IAppSystem.h"
+		"$SRC_DIR/public/tier0/ICommandLine.h"
+		"$SRC_DIR/public/icvar.h"
+		"$SRC_DIR/public/materialsystem/imaterial.h"
+		"$SRC_DIR/public/materialsystem/imaterialsystem.h"
+		"$SRC_DIR/public/materialsystem/imaterialsystemhardwareconfig.h"
+		"$SRC_DIR/public/materialsystem/imaterialvar.h"
+		"$SRC_DIR/public/materialsystem/imesh.h"
+		"$SRC_DIR/public/materialsystem/IShader.h"
+		"$SRC_DIR/public/materialsystem/ishaderapi.h"
+		"../IShaderSystem.h"
+		"$SRC_DIR/public/materialsystem/itexture.h"
+		"$SRC_DIR/public/materialsystem/materialsystem_config.h"
+		"$SRC_DIR/public/tier0/memdbgoff.h"
+		"$SRC_DIR/public/tier0/memdbgon.h"
+		"$SRC_DIR/public/tier0/platform.h"
+		"$SRC_DIR/public/tier0/protected_things.h"
+		"$SRC_DIR/public/string_t.h"
+		"$SRC_DIR/public/tier1/strtools.h"
+		"$SRC_DIR/public/tier1/utlmemory.h"
+		"$SRC_DIR/public/tier1/utlvector.h"
+		"$SRC_DIR/public/mathlib/vector.h"
+		"$SRC_DIR/public/mathlib/vector2d.h"
+		"$SRC_DIR/public/mathlib/vector4d.h"
+		"$SRC_DIR/public/mathlib/vmatrix.h"
+		"$SRC_DIR/public/mathlib/vplane.h"
+		"$SRC_DIR/public/vstdlib/vstdlib.h"
+	}
+
+	folder "Source Files"
+	{
+		"$SHADERLIBDIR/BaseShader.cpp"
+		"$SHADERLIBDIR/ShaderDLL.cpp"
+		"$SHADERLIBDIR/shaderlib_cvar.cpp"
+	}
+
+	folder "Header Files"
+	{
+		"$SRC_DIR/public/shaderlib/BaseShader.h"
+		"$SRC_DIR/public/shaderlib/commandbuilder.h"
+		"$SRC_DIR/public/shaderlib/cshader.h"
+		"$SRC_DIR/public/shaderlib/ShaderDLL.h"
+		"$SHADERLIBDIR/shaderDLL_Global.h"
+		"$SHADERLIBDIR/shaderlib_cvar.h"
+	}
+}

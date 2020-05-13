@@ -1,0 +1,13 @@
+// ---------------------------------------------------------------
+// _projects.qpc
+// ---------------------------------------------------------------
+project "client" "game/client/client_swarm.qpc" [$SWARM]
+
+project "server" "game/server/server_swarm.qpc" [$SWARM]
+
+project "missionchooser" "game/missionchooser/missionchooser_swarm.qpc" [$SWARM]
+
+project "shaderlib" "materialsystem/shaderlib/shaderlib.qpc"
+
+project "game_shader" "materialsystem/stdshaders/_game_shader_dx9.qpc"
+

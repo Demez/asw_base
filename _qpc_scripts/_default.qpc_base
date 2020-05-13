@@ -1,0 +1,14 @@
+// ---------------------------------------------------------------
+// _default.qpc
+// ---------------------------------------------------------------
+macro   "SOURCESDK" "1"
+
+include "_qpc_scripts/_projects.qpc_base"
+include "_qpc_scripts/_groups.qpc_base"
+
+configurations
+{
+	"Debug"
+	"Release"
+}
+

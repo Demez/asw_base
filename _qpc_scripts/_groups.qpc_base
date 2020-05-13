@@ -1,0 +1,28 @@
+// ---------------------------------------------------------------
+// _groups.qpc
+// ---------------------------------------------------------------
+group "game" "everything"
+{
+	"client"
+	"server"
+	
+	// "missionchooser"
+}
+
+group "shaders" "everything"
+{
+	"game_shader"
+	"shaderlib"
+}
+
+group "everything"
+{
+	folder "Game Binaries"
+	{
+		"client"
+		"server"
+	}
+	
+	"missionchooser"
+}
+

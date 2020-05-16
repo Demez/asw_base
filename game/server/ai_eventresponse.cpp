@@ -76,7 +76,7 @@ void CNPCEventResponseSystem::TriggerEvent( const char *pResponse, bool bForce, 
 //-----------------------------------------------------------------------------
 void CNPCEventResponseSystem::FrameUpdatePreEntityThink()
 {
- 	if ( !m_ActiveEvents.Count() || !AI_IsSinglePlayer() || !UTIL_GetLocalPlayer() )
+ 	if ( !m_ActiveEvents.Count() || !UTIL_GetLocalPlayer() )
 		return;
 
 	if ( m_flNextEventPoll > gpGlobals->curtime )

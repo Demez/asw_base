@@ -7621,12 +7621,14 @@ void CStripWeapons::StripWeapons(inputdata_t &data, bool stripSuit)
 	}
 	else if ( !g_pGameRules->IsDeathmatch() )
 	{
-		pPlayer = UTIL_GetLocalPlayer();
-	}
-
-	if ( pPlayer )
-	{
-		pPlayer->RemoveAllItems( stripSuit );
+		for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+		{
+			CBasePlayer* pPlayer = UTIL_PlayerByIndex( i );
+			if ( pPlayer )
+			{
+				pPlayer->RemoveAllItems( stripSuit );
+			}
+		}
 	}
 }
 
@@ -7700,44 +7702,51 @@ void CRevertSaved::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	SetNextThink( gpGlobals->curtime + LoadTime() );
 	SetThink( &CRevertSaved::LoadThink );
 
-	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-
-	if ( pPlayer )
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
-		//Adrian: Setting this flag so we can't move or save a game.
-		pPlayer->pl.deadflag = true;
-		pPlayer->AddFlag( (FL_NOTARGET|FL_FROZEN) );
+		CBasePlayer *pPlayer = UTIL_PlayerByIndex(i);
 
-		// clear any pending autosavedangerous
-		g_ServerGameDLL.m_fAutoSaveDangerousTime = 0.0f;
-		g_ServerGameDLL.m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
+		if ( pPlayer )
+		{
+			//Adrian: Setting this flag so we can't move or save a game.
+			pPlayer->pl.deadflag = true;
+			pPlayer->AddFlag( (FL_NOTARGET|FL_FROZEN) );
+
+			// clear any pending autosavedangerous
+			g_ServerGameDLL.m_fAutoSaveDangerousTime = 0.0f;
+			g_ServerGameDLL.m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
+		}
 	}
 }
 
 void CRevertSaved::InputReload( inputdata_t &inputdata )
 {
-	UTIL_ScreenFadeAll( m_clrRender, Duration(), HoldTime(), FFADE_OUT );
-
-	SetNextThink( gpGlobals->curtime + LoadTime() );
-	SetThink( &CRevertSaved::LoadThink );
-
-	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-
-	if ( pPlayer )
+	// blech
+	if ( gpGlobals->maxClients == 1 )
 	{
-		//Adrian: Setting this flag so we can't move or save a game.
-		pPlayer->pl.deadflag = true;
-		pPlayer->AddFlag( (FL_NOTARGET|FL_FROZEN) );
+		UTIL_ScreenFadeAll( m_clrRender, Duration(), HoldTime(), FFADE_OUT );
 
-		// clear any pending autosavedangerous
-		g_ServerGameDLL.m_fAutoSaveDangerousTime = 0.0f;
-		g_ServerGameDLL.m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
+		SetNextThink( gpGlobals->curtime + LoadTime() );
+		SetThink( &CRevertSaved::LoadThink );
+
+		CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+
+		if ( pPlayer )
+		{
+			//Adrian: Setting this flag so we can't move or save a game.
+			pPlayer->pl.deadflag = true;
+			pPlayer->AddFlag( (FL_NOTARGET|FL_FROZEN) );
+
+			// clear any pending autosavedangerous
+			g_ServerGameDLL.m_fAutoSaveDangerousTime = 0.0f;
+			g_ServerGameDLL.m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
+		}
 	}
 }
 
 void CRevertSaved::LoadThink( void )
 {
-	if ( !gpGlobals->deathmatch )
+	if ( gpGlobals->maxClients == 1 )
 	{
 		engine->ServerCommand("reload\n");
 	}
@@ -7817,7 +7826,7 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 	}
 	else if ( !g_pGameRules->IsDeathmatch() )
 	{
-		pPlayer = UTIL_GetLocalPlayer();
+		pPlayer = UTIL_GetNearestPlayer( GetAbsOrigin() );
 	}
 
 	if ( pPlayer )

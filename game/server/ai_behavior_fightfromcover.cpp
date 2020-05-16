@@ -771,9 +771,9 @@ void CAI_FightFromCoverGoal::ResolveNames()
 {
 	BaseClass::ResolveNames();
 
-	if ( m_hGoalEntity == NULL && AI_IsSinglePlayer() )
+	if ( m_hGoalEntity == NULL )
 	{
-		m_hGoalEntity = UTIL_GetLocalPlayer();
+		m_hGoalEntity = UTIL_GetNearestPlayerPreferVisible( this );
 	}
 
 	if ( m_DirectionalMarker != NULL_STRING )

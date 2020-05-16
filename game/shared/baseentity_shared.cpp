@@ -2005,17 +2005,22 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 }
 
 
+// Why the hell is this in CBaseEntity?
+// This should be in CGameRules to avoid this valve ifdef here
 //-----------------------------------------------------------------------------
 // Should we draw bubbles underwater?
 //-----------------------------------------------------------------------------
 bool CBaseEntity::ShouldDrawUnderwaterBulletBubbles()
 {
 #if defined( HL2_DLL ) && defined( GAME_DLL )
-	CBaseEntity *pPlayer = ( gpGlobals->maxClients == 1 ) ? UTIL_GetLocalPlayer() : NULL;
-	return pPlayer && (pPlayer->GetWaterLevel() == 3);
-#else
-	return false;
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+		if (pPlayer && pPlayer->FInViewCone(this) && pPlayer->GetWaterLevel() == 3)
+			return true;
+	}
 #endif
+	return false;
 }
 
 

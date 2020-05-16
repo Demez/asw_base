@@ -953,7 +953,7 @@ void CAI_BaseActor::UpdateBodyControl( )
 }
 
 
-static ConVar scene_clamplookat( "scene_clamplookat", "1", FCVAR_NONE, "Clamp head turns to a MAX of 20 degrees per think." );
+static ConVar scene_clamplookat( "scene_clamplookat", "1", FCVAR_NONE, "Clamp head turns to a max of 20 degrees per think." );
 
 
 void CAI_BaseActor::UpdateHeadControl( const Vector &vHeadTarget, float flHeadInfluence )

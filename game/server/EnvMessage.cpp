@@ -245,9 +245,7 @@ void CCredits::InputRollOutroCredits( inputdata_t &inputdata )
 
 void CCredits::InputShowLogo( inputdata_t &inputdata )
 {
-	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-
-	CSingleUserRecipientFilter user( pPlayer );
+	CReliableBroadcastRecipientFilter user;
 	user.MakeReliable();
 
 	if ( m_flLogoLength )

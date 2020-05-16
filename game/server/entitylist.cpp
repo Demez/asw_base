@@ -643,7 +643,9 @@ CBaseEntity *CGlobalEntityList::FindEntityProcedural( const char *szName, CBaseE
 		//
 		if ( FStrEq( pName, "player" ) )
 		{
-			return (CBaseEntity *)UTIL_PlayerByIndex( 1 );
+			// If a player is the picker entity, prefer that player, otherwise just use the local player
+			CBaseEntity* pPickerEntity = UTIL_FindPickerEntity();
+			return pPickerEntity != NULL ? pPickerEntity : (CBaseEntity *) UTIL_GetLocalPlayer();
 		}
 		else if ( FStrEq( pName, "pvsplayer" ) )
 		{
@@ -673,7 +675,7 @@ CBaseEntity *CGlobalEntityList::FindEntityProcedural( const char *szName, CBaseE
 		}
 		else if ( FStrEq( pName, "picker" ) )
 		{
-			return UTIL_PlayerByIndex(1) ? UTIL_PlayerByIndex(1)->FindPickerEntity() : NULL;
+			return UTIL_FindPickerEntity();
 		}
 		else if ( FStrEq( pName, "self" ) )
 		{

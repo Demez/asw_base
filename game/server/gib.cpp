@@ -400,14 +400,7 @@ bool CGib::SUB_AllowedToFade( void )
 			return false;
 	}
 
-	CBasePlayer *pPlayer = ( AI_IsSinglePlayer() ) ? UTIL_GetLocalPlayer() : NULL;
-
-	if ( pPlayer && pPlayer->FInViewCone( this ) && m_bForceRemove == false )
-	{
-		return false;
-	}
-
-	return true;
+	return ( !UTIL_IsAnyPlayerLookingAtEntity( this ) || m_bForceRemove );
 }
 
 

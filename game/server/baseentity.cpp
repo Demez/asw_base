@@ -1274,13 +1274,13 @@ void CBaseEntity::DrawDebugGeometryOverlays(void)
 			NDebugOverlay::EntityBounds(this, 255, 255, 255, 0, 0 );
 		}
 	}
-	if ( ( m_debugOverlays & OVERLAY_AUTOAIM_BIT ) && (GetFlags()&FL_AIMTARGET) && AI_GetSinglePlayer() != NULL )
+
+	CBasePlayer* pPlayer = UTIL_GetNearestPlayer(GetAbsOrigin());
+	if ( ( m_debugOverlays & OVERLAY_AUTOAIM_BIT ) && (GetFlags()&FL_AIMTARGET) && pPlayer != NULL )
 	{
 		// Crude, but it gets the point across.
 		Vector vecCenter = GetAutoAimCenter();
 		Vector vecRight, vecUp, vecDiag;
-
-		CBasePlayer *pPlayer = AI_GetSinglePlayer();
 
 		float radius = GetAutoAimRadius();
 
@@ -7516,9 +7516,12 @@ void CBaseEntity::DispatchResponse( const char *conceptName )
 	ModifyOrAppendCriteria( set );
 
 	// Append local player criteria to set,too
-	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-	if( pPlayer )
-		pPlayer->ModifyOrAppendPlayerCriteria( set );
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+		if (pPlayer)
+			pPlayer->ModifyOrAppendPlayerCriteria( set );
+	}
 
 	// Now that we have a criteria set, ask for a suitable response
 	AI_Response result;
@@ -7587,10 +7590,11 @@ void CBaseEntity::DumpResponseCriteria( void )
 	ModifyOrAppendCriteria( set );
 
 	// Append local player criteria to set,too
-	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-	if ( pPlayer )
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
-		pPlayer->ModifyOrAppendPlayerCriteria( set );
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+		if (pPlayer)
+			pPlayer->ModifyOrAppendPlayerCriteria( set );
 	}
 
 	// Now dump it all to console
@@ -8087,15 +8091,7 @@ bool CBaseEntity::SUB_AllowedToFade( void )
 			return false;
 	}
 
-	// on Xbox, allow these to fade out
-#ifndef _XBOX
-	CBasePlayer *pPlayer = ( AI_IsSinglePlayer() ) ? UTIL_GetLocalPlayer() : NULL;
-
-	if ( pPlayer && pPlayer->FInViewCone( this ) )
-		return false;
-#endif
-
-	return true;
+	return UTIL_IsAnyPlayerLookingAtEntity( this );
 }
 
 //-----------------------------------------------------------------------------

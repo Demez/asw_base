@@ -255,6 +255,7 @@ public:
 	bool KeyValue( const char *szKeyName, const char *szValue );
 	void Enable( void );
 	void Disable( void );
+	void DisableCameraOnPlayer( CBasePlayer* pPlayer );
 	void SetPlayer( CBaseEntity *pPlayer );
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void FollowTarget( void );

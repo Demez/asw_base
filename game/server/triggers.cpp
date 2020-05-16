@@ -1596,6 +1596,15 @@ void CChangeLevel::WarnAboutActiveLead( void )
 	}
 }
 
+
+ConVar mp_transition_players_percent(
+	"mp_transition_players_percent",
+	"66",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"How many players in percent are needed for a level transition?"
+);
+
+
 void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	CBaseEntity	*pLandmark;
@@ -1607,47 +1616,57 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	if ( g_pGameRules->IsDeathmatch() )
 		return;
 
-	// Some people are firing these multiple times in a frame, disable
-	if ( m_bTouched )
-		return;
-
-	m_bTouched = true;
-
-	CBaseEntity *pPlayer = (pActivator && pActivator->IsPlayer()) ? pActivator : UTIL_GetLocalPlayer();
-
-	int transitionState = InTransitionVolume(pPlayer, m_szLandmarkName);
-	if ( transitionState == TRANSITION_VOLUME_SCREENED_OUT )
-	{
-		DevMsg( 2, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName );
-		return;
-	}
-
 	// look for a landmark entity		
 	pLandmark = FindLandmark( m_szLandmarkName );
 
 	if ( !pLandmark )
 		return;
 
-	// no transition volumes, check PVS of landmark
-	if ( transitionState == TRANSITION_VOLUME_NOT_FOUND )
+	if ( mp_transition_players_percent.GetInt() > 0 )
 	{
-		byte pvs[MAX_MAP_CLUSTERS/8];
-		int clusterIndex = engine->GetClusterForOrigin( pLandmark->GetAbsOrigin() );
-		engine->GetPVSForCluster( clusterIndex, sizeof(pvs), pvs );
-		if ( pPlayer )
-		{
-			Vector vecSurroundMins, vecSurroundMaxs;
-			pPlayer->CollisionProp()->WorldSpaceSurroundingBounds( &vecSurroundMins, &vecSurroundMaxs );
-			bool playerInPVS = engine->CheckBoxInPVS( vecSurroundMins, vecSurroundMaxs, pvs, sizeof( pvs ) );
+		int totalPlayers = 0;
+		int transitionPlayers = 0;
 
-			//Assert( playerInPVS );
-			if ( !playerInPVS )
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+			if (pPlayer && pPlayer->IsAlive())
 			{
-				Warning( "Player isn't in the landmark's (%s) PVS, aborting\n", m_szLandmarkName );
-				return;
+				totalPlayers++;
+
+				int transitionState = InTransitionVolume( pPlayer, m_szLandmarkName );
+
+				if ( transitionState == TRANSITION_VOLUME_PASSED )
+				{
+					transitionPlayers++;
+				}
+				// no transition volumes, check PVS of landmark
+				else if ( transitionState == TRANSITION_VOLUME_NOT_FOUND )
+				{
+					byte pvs[MAX_MAP_CLUSTERS/8];
+					int clusterIndex = engine->GetClusterForOrigin( pLandmark->GetAbsOrigin() );
+					engine->GetPVSForCluster( clusterIndex, sizeof(pvs), pvs );
+
+					Vector vecSurroundMins, vecSurroundMaxs;
+					pPlayer->CollisionProp()->WorldSpaceSurroundingBounds( &vecSurroundMins, &vecSurroundMaxs );
+					bool playerInPVS = engine->CheckBoxInPVS( vecSurroundMins, vecSurroundMaxs, pvs, sizeof( pvs ) );
+
+					if ( playerInPVS )
+					{
+						transitionPlayers++;
+					}
+				}
 			}
 		}
+
+		if (((int) (transitionPlayers / totalPlayers * 100)) < mp_transition_players_percent.GetInt())
+		{
+			Msg("Transitions: Not enough players to trigger level change\n");
+			return;
+		}
 	}
+
+	// We have enough players for a transition
 
 	WarnAboutActiveLead();
 
@@ -2884,6 +2903,7 @@ LINK_ENTITY_TO_CLASS( point_viewcontrol, CTriggerCamera );
 
 BEGIN_DATADESC( CTriggerCamera )
 
+	// TODO: remove this
 	DEFINE_FIELD( m_hPlayer, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_hTarget, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_pPath, FIELD_CLASSPTR ),
@@ -3022,6 +3042,9 @@ void CTriggerCamera::InputDisable( inputdata_t &inputdata )
 	Disable();
 }
 
+ConVar sv_viewcontrol_disable_fov("sv_viewcontrol_disable_fov", "0", FCVAR_REPLICATED | FCVAR_CHEAT);
+ConVar sv_viewcontrol_force_all_players("sv_viewcontrol_force_all_players", "1", FCVAR_REPLICATED | FCVAR_ARCHIVE);
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -3031,6 +3054,7 @@ void CTriggerCamera::Enable( void )
 
 	if ( !m_hPlayer || !m_hPlayer->IsPlayer() )
 	{
+		// no player activated this, so grab the local player
 		m_hPlayer = UTIL_GetLocalPlayer();
 	}
 
@@ -3040,77 +3064,10 @@ void CTriggerCamera::Enable( void )
 		return;
 	}
 
-	Assert( m_hPlayer->IsPlayer() );
-	CBasePlayer *pPlayer = NULL;
+	CBasePlayer *pActivatorPlayer = ((CBasePlayer*)m_hPlayer.Get());
 
-	if ( m_hPlayer->IsPlayer() )
-	{
-		pPlayer = ((CBasePlayer*)m_hPlayer.Get());
-	}
-	else
-	{
-		Warning("CTriggerCamera could not find a player!\n");
-		return;
-	}
-
-	// if the player was already under control of a similar trigger, disable the previous trigger.
-	{
-		CBaseEntity *pPrevViewControl = pPlayer->GetViewEntity();
-		if (pPrevViewControl && pPrevViewControl != pPlayer)
-		{
-			CTriggerCamera *pOtherCamera = dynamic_cast<CTriggerCamera *>(pPrevViewControl);
-			if ( pOtherCamera )
-			{
-				if ( pOtherCamera == this )
-				{
-					// what the hell do you think you are doing?
-					Warning("Viewcontrol %s was enabled twice in a row!\n", GetDebugName());
-					return;
-				}
-				else
-				{
-					pOtherCamera->Disable();
-				}
-			}
-		}
-	}
-
-
-	m_nPlayerButtons = pPlayer->m_nButtons;
-
-	
-	// Make the player invulnerable while under control of the camera.  This will prevent situations where the player dies while under camera control but cannot restart their game due to disabled player inputs.
-	m_nOldTakeDamage = m_hPlayer->m_takedamage;
-	m_hPlayer->m_takedamage = DAMAGE_NO;
-	
-	if ( HasSpawnFlags( SF_CAMERA_PLAYER_NOT_SOLID ) )
-	{
-		m_hPlayer->AddSolidFlags( FSOLID_NOT_SOLID );
-	}
-	
-	m_flReturnTime = gpGlobals->curtime + m_flWait;
-	m_flSpeed = m_initialSpeed;
-	m_targetSpeed = m_initialSpeed;
-
-	// this pertains to view angles, not translation.
-	if ( HasSpawnFlags( SF_CAMERA_PLAYER_SNAP_TO ) )
-	{
-		m_bSnapToGoal = true;
-	}
-
-	if ( HasSpawnFlags( SF_CAMERA_PLAYER_SETFOV ) )
-	{
-		if ( pPlayer )
-		{
-			if ( pPlayer->GetFOVOwner() && (FClassnameIs( pPlayer->GetFOVOwner(), "point_viewcontrol_multiplayer" ) || FClassnameIs( pPlayer->GetFOVOwner(), "point_viewcontrol" )) )
-			{
-				pPlayer->ClearZoomOwner();
-			}
-			pPlayer->SetFOV( this, m_fov, m_fovSpeed );
-		}
-	}
-
-	if ( HasSpawnFlags(SF_CAMERA_PLAYER_TARGET ) )
+	// general camera setup
+	if ( HasSpawnFlags( SF_CAMERA_PLAYER_TARGET ) )
 	{
 		m_hTarget = m_hPlayer;
 	}
@@ -3140,14 +3097,22 @@ void CTriggerCamera::Enable( void )
 		}
 	}
 
-	if (HasSpawnFlags(SF_CAMERA_PLAYER_TAKECONTROL ) )
+	m_flReturnTime = gpGlobals->curtime + m_flWait;
+	m_flSpeed = m_initialSpeed;
+	m_targetSpeed = m_initialSpeed;
+
+	// this pertains to view angles, not translation.
+	if ( HasSpawnFlags( SF_CAMERA_PLAYER_SNAP_TO ) )
 	{
-		((CBasePlayer*)m_hPlayer.Get())->EnableControl(FALSE);
+		m_bSnapToGoal = true;
 	}
+
+	m_nPlayerButtons = pActivatorPlayer->m_nButtons;
+	m_nOldTakeDamage = pActivatorPlayer->m_takedamage;
 
 	if ( m_sPath != NULL_STRING )
 	{
-		m_pPath = gEntList.FindEntityByName( NULL, m_sPath, NULL, m_hPlayer );
+		m_pPath = gEntList.FindEntityByName( NULL, m_sPath, NULL, pActivatorPlayer );
 	}
 	else
 	{
@@ -3159,15 +3124,13 @@ void CTriggerCamera::Enable( void )
 	{
 		if ( m_pPath->m_flSpeed != 0 )
 			m_targetSpeed = m_pPath->m_flSpeed;
-		
+
 		m_flStopTime += m_pPath->GetDelay();
 	}
 
-
 	// copy over player information. If we're interpolating from
 	// the player position, do something more elaborate.
-#if HL2_EPISODIC
-	if (m_bInterpolatePosition)
+	if ( m_bInterpolatePosition )
 	{
 		// initialize the values we'll spline between
 		m_vStartPos = m_hPlayer->EyePosition();
@@ -3178,9 +3141,7 @@ void CTriggerCamera::Enable( void )
 
 		SetAbsVelocity( vec3_origin );
 	}
-	else
-#endif
-	if (HasSpawnFlags(SF_CAMERA_PLAYER_POSITION ) )
+	else if ( HasSpawnFlags( SF_CAMERA_PLAYER_POSITION ) )
 	{
 		UTIL_SetOrigin( this, m_hPlayer->EyePosition() );
 		SetLocalAngles( QAngle( m_hPlayer->GetLocalAngles().x, m_hPlayer->GetLocalAngles().y, 0 ) );
@@ -3191,13 +3152,73 @@ void CTriggerCamera::Enable( void )
 		SetAbsVelocity( vec3_origin );
 	}
 
-
-	pPlayer->SetViewEntity( this );
-
-	// Hide the player's viewmodel
-	if ( pPlayer->GetActiveWeapon() )
+	if ( sv_viewcontrol_force_all_players.GetBool() )
 	{
-		pPlayer->GetActiveWeapon()->AddEffects( EF_NODRAW );
+		// stuff for all players that needs to be looped
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+
+			if ( pPlayer == NULL )
+			{
+				continue;
+			}
+
+			// if the player was already under control of a similar trigger, disable the previous trigger.
+			{
+				CBaseEntity *pPrevViewControl = pPlayer->GetViewEntity();
+				if (pPrevViewControl && pPrevViewControl != pPlayer)
+				{
+					CTriggerCamera *pOtherCamera = dynamic_cast<CTriggerCamera *>(pPrevViewControl);
+					if ( pOtherCamera )
+					{
+						if ( pOtherCamera == this )
+						{
+							// what the hell do you think you are doing?
+							Warning("Viewcontrol %s was enabled twice in a row!\n", GetDebugName());
+							return;
+						}
+						else
+						{
+							pOtherCamera->Disable();
+						}
+					}
+				}
+			}
+	
+			// Make the player invulnerable while under control of the camera.
+			// This will prevent situations where the player dies while under camera
+			// control but cannot restart their game due to disabled player inputs.
+			pPlayer->m_takedamage = DAMAGE_NO;
+	
+			if ( HasSpawnFlags( SF_CAMERA_PLAYER_NOT_SOLID ) )
+			{
+				pPlayer->AddSolidFlags( FSOLID_NOT_SOLID );
+			}
+
+			if ( HasSpawnFlags( SF_CAMERA_PLAYER_SETFOV ) && !sv_viewcontrol_disable_fov.GetBool() )
+			{
+				if ( pPlayer->GetFOVOwner() && (FClassnameIs( pPlayer->GetFOVOwner(), "point_viewcontrol_multiplayer" ) || FClassnameIs( pPlayer->GetFOVOwner(), "point_viewcontrol" )) )
+				{
+					pPlayer->ClearZoomOwner();
+				}
+
+				pPlayer->SetFOV( this, m_fov, m_fovSpeed );
+			}
+
+			if (HasSpawnFlags( SF_CAMERA_PLAYER_TAKECONTROL ) )
+			{
+				pPlayer->EnableControl(FALSE);
+			}
+
+			pPlayer->SetViewEntity( this );
+
+			// Hide the player's viewmodel
+			if ( pPlayer->GetActiveWeapon() )
+			{
+				pPlayer->GetActiveWeapon()->AddEffects( EF_NODRAW );
+			}
+		}
 	}
 
 	// Only track if we have a target
@@ -3243,6 +3264,37 @@ void CTriggerCamera::ScriptSetFov( int iFOV, float fovSpeed )
 	}
 }
 
+
+void CTriggerCamera::DisableCameraOnPlayer( CBasePlayer* pPlayer )
+{
+	if ( pPlayer == NULL )
+	{
+		return;
+	}
+
+	if ( pPlayer->IsAlive() )
+	{
+		if ( HasSpawnFlags( SF_CAMERA_PLAYER_NOT_SOLID ) )
+		{
+			pPlayer->RemoveSolidFlags( FSOLID_NOT_SOLID );
+		}
+
+		pPlayer->SetViewEntity( NULL );
+		pPlayer->EnableControl(TRUE);
+		pPlayer->m_Local.m_bDrawViewmodel = true;
+	}
+
+	if ( HasSpawnFlags( SF_CAMERA_PLAYER_SETFOV ) )
+	{
+		pPlayer->SetFOV( this, 0, m_fovSpeed );
+	}
+
+	// Force all players to use the activator players original takedamage state
+	// not gonna store all of them, maybe later
+	pPlayer->m_takedamage = m_nOldTakeDamage;
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -3251,26 +3303,15 @@ void CTriggerCamera::Disable( void )
 	if ( m_hPlayer )
 	{
 		CBasePlayer *pBasePlayer = (CBasePlayer*)m_hPlayer.Get();
+		DisableCameraOnPlayer( pBasePlayer );
+	}
 
-		if ( pBasePlayer->IsAlive() )
+	if ( sv_viewcontrol_force_all_players.GetBool() )
+	{
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
 		{
-			if ( HasSpawnFlags( SF_CAMERA_PLAYER_NOT_SOLID ) )
-			{
-				pBasePlayer->RemoveSolidFlags( FSOLID_NOT_SOLID );
-			}
-
-			pBasePlayer->SetViewEntity( NULL );
-			pBasePlayer->EnableControl(TRUE);
-			pBasePlayer->m_Local.m_bDrawViewmodel = true;
+			DisableCameraOnPlayer( UTIL_PlayerByIndex(i) );
 		}
-
-		if ( HasSpawnFlags( SF_CAMERA_PLAYER_SETFOV ) )
-		{
-			pBasePlayer->SetFOV( this, 0, m_fovSpeed );
-		}
-
-		//return the player to previous takedamage state
-		m_hPlayer->m_takedamage = m_nOldTakeDamage;
 	}
 
 	m_state = USE_OFF;

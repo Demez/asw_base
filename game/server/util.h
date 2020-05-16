@@ -201,14 +201,19 @@ float		UTIL_GetSimulationInterval();
 // Input  : playerIndex - index of the player - first player is index 1
 //-----------------------------------------------------------------------------
 
-// NOTENOTE: Use UTIL_GetLocalPlayer instead of UTIL_PlayerByIndex IF you're in single player
-// and you want the player.
 CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
 
-// NOTENOTE: Use this instead of UTIL_PlayerByIndex IF you're in single player
-// and you want the player.
-// not useable in multiplayer - see UTIL_GetListenServerHost()
 CBasePlayer* UTIL_GetLocalPlayer( void );
+
+// multiplayer use
+CBasePlayer* UTIL_GetNearestPlayer( const Vector& origin );
+// would MASK_BLOCKLOS_AND_NPCS be better here?
+CBasePlayer* UTIL_GetNearestPlayerPreferVisible( CBaseEntity* pLooker, int mask = MASK_SOLID_BRUSHONLY );
+CBasePlayer* UTIL_GetNearestVisiblePlayer( CBaseEntity* pLooker, int mask = MASK_SOLID_BRUSHONLY );
+CBasePlayer* UTIL_GetOtherNearestPlayer( const Vector& origin );
+
+bool UTIL_IsAnyPlayerLookingAtEntity( CBaseEntity* pEntity );
+bool UTIL_IsAnyPlayerLookingAtEntity( const Vector &vecSpot );
 
 // get the local player on a listen server
 CBasePlayer *UTIL_GetListenServerHost( void );
@@ -245,7 +250,6 @@ void		UTIL_SetClientVisibilityPVS( edict_t *pClient, const unsigned char *pvs, i
 bool		UTIL_ClientPVSIsExpanded();
 
 
-
 edict_t		*UTIL_FindClientInPVS( edict_t *pEdict );
 edict_t		*UTIL_FindClientInVisibilityPVS( edict_t *pEdict );
 
@@ -253,8 +257,8 @@ edict_t		*UTIL_FindClientInPVSGuts(edict_t *pEdict, unsigned char *pvs, unsigned
 
 // This is a version which finds any clients whose PVS intersects the box
 CBaseEntity *UTIL_FindClientInPVS( const Vector &vecBoxMins, const Vector &vecBoxMaxs );
-
 CBaseEntity *UTIL_EntitiesInPVS( CBaseEntity *pPVSEntity, CBaseEntity *pStartingEntity );
+CBaseEntity *UTIL_FindPickerEntity( void );
 
 // Pass in an array of pointers and an array size, it fills the array and returns the number inserted
 int			UTIL_EntitiesInBox( const Vector &mins, const Vector &maxs, CFlaggedEntitiesEnum *pEnum  );

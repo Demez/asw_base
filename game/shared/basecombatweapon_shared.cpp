@@ -954,15 +954,11 @@ void CBaseCombatWeapon::Equip( CBaseCombatCharacter *pOwner )
 
 void CBaseCombatWeapon::SetActivity( Activity act, float duration ) 
 { 
-
-	
 	int sequence = SelectWeightedSequence( act ); 
 	
 	// FORCE IDLE on sequences we don't have (which should be many)
 	if ( sequence == ACTIVITY_NOT_AVAILABLE )
 		sequence = SelectWeightedSequence( ACT_VM_IDLE );
-
-
 
 	if ( sequence != ACTIVITY_NOT_AVAILABLE )
 	{

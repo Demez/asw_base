@@ -5425,7 +5425,7 @@ void CBaseEntity::PrecacheModelComponents( int nModelIndex )
 }
 
 // Game crashes on Precache? Turn it on and see what model cause it. [str]
-ConVar sv_modelprecache_debug( "sv_modelprecache_debug", "1", FCVAR_CHEAT ); 
+ConVar sv_modelprecache_debug( "sv_modelprecache_debug", "0", FCVAR_CHEAT ); 
 //-----------------------------------------------------------------------------
 // Purpose: Add model to level precache list
 // Input  : *name - model name

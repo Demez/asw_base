@@ -124,6 +124,7 @@ Vector g_cameraFollowPos;
 ConVar	gl_clear( "gl_clear","0");
 ConVar	gl_clear_randomcolor( "gl_clear_randomcolor", "0", FCVAR_CHEAT, "Clear the back buffer to random colors every frame. Helps spot open seams in geometry." );
 
+static ConVar r_nearz( "r_nearz", "2", FCVAR_CHEAT, "" );  // default was 7
 static ConVar r_farz( "r_farz", "-1", FCVAR_CHEAT, "Override the far clipping plane. -1 means to use the value in env_fog_controller." );
 static ConVar cl_demoviewoverride( "cl_demoviewoverride", "0", 0, "Override view during demo playback" );
 
@@ -591,7 +592,7 @@ static QAngle s_DbgSetupAngles[ MAX_SPLITSCREEN_PLAYERS ];
 //-----------------------------------------------------------------------------
 float CViewRender::GetZNear()
 {
-	return VIEW_NEARZ;
+	return r_nearz.GetFloat();
 }
 
 float CViewRender::GetZFar()
@@ -727,7 +728,7 @@ void CViewRender::SetUpView()
 	float flFOVOffset = default_fov.GetFloat() - view.fov;
 
 	//Adjust the viewmodel's FOV to move with any FOV offsets on the viewer's end
-	view.fovViewmodel = GetClientMode()->GetViewModelFOV() - flFOVOffset;
+	view.fovViewmodel = fabs(GetClientMode()->GetViewModelFOV() - flFOVOffset);
 
 	// Compute the world->main camera transform
 	ComputeCameraVariables( view.origin, view.angles, 

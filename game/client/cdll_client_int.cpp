@@ -1009,10 +1009,16 @@ bool InitGameSystems( CreateInterfaceFn appSystemFactory )
 	}	
 
 	// Each mod is required to implement this
-	view = GetViewRenderInstance();
+	// stupid, just changes g_ViewRender to CViewRender and forcibly uses that
+
 	if ( !view )
 	{
-		Error( "GetViewRenderInstance() must be implemented by game." );
+		view = GetViewRenderInstance();
+		if ( !view )
+		{
+			// won't even compile without it
+			Error( "No ViewRender instance!\n");
+		}
 	}
 
 	view->Init();
@@ -1754,13 +1760,8 @@ void ConfigureCurrentSystemLevel()
 		nGPUMemLevel = 360;
 	}
 
-#if defined( SWARM_DLL )
-	char szModName[32] = "swarm";
-#elif defined ( HL2_EPISODIC )
-	char szModName[32] = "ep2";
-#elif defined ( SDK_CLIENT_DLL )
-	char szModName[32] = "sdk";
-#endif
+	// blech
+	char szModName[32] = "demez_hl2_asw";
 
 	UpdateSystemLevel( nCPULevel, nGPULevel, nMemLevel, nGPUMemLevel, VGui_IsSplitScreen(), szModName );
 

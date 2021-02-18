@@ -955,7 +955,8 @@ void CSimpleRenderExecutor::AddView( CRendering3dView *pView )
 }
 
 
-#if !defined( INFESTED_DLL )
+// stupid
+#if 0
 static CViewRender g_ViewRender;
 IViewRender *GetViewRenderInstance()
 {

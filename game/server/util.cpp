@@ -685,6 +685,61 @@ bool UTIL_IsAnyPlayerLookingAtEntity( const Vector &vecSpot )
 }
 
 
+bool UTIL_IsAnyPlayerVisible( CBaseEntity* pEntity )
+{
+	return UTIL_IsAnyPlayerLookingAtEntity( pEntity->WorldSpaceCenter() );
+}
+
+
+bool UTIL_IsAnyPlayerVisible( const Vector &vecSpot )
+{
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+		if (pPlayer && pPlayer->FVisible(vecSpot))
+			return true;
+	}
+
+	return false;
+}
+
+
+bool UTIL_AnyPlayerHasFlashlightOn()
+{
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+		if ( !pPlayer )
+			continue;
+
+		if ( pPlayer->FlashlightIsOn() )
+			return true;
+	}
+
+	return false;
+}
+
+
+// checks if any player is illuminating this entity
+bool UTIL_IsIlluminatedByFlashlight( CBaseEntity *pEntity, float *flReturnDot )
+{
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+		if ( !pPlayer )
+			continue;
+
+		if ( !pPlayer->FlashlightIsOn() )
+			continue;
+
+		if ( pPlayer->IsIlluminatedByFlashlight( pEntity, flReturnDot ) )
+			return true;
+	}
+
+	return false;
+}
+
+
 //
 // Get the nearest player to a player that called the command
 //

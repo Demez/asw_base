@@ -912,10 +912,19 @@ void PhysForceClearVelocity( IPhysicsObject *pPhys )
 	pPhys->DestroyFrictionSnapshot( pSnapshot );
 }
 
+#define OLD_PARTICLES 1
+
 void PhysFrictionEffect( Vector &vecPos, Vector vecVel, float energy, int surfaceProps, int surfacePropsHit )
 {
+	// Demez: particle hack
+
+#if !OLD_PARTICLES
 	QAngle angDirection;
 	VectorAngles( vecVel, angDirection );
+#else
+	Vector invVecVel = -vecVel;
+	VectorNormalize( invVecVel );
+#endif
 
 	surfacedata_t *psurf = physprops->GetSurfaceData( surfaceProps );
 	surfacedata_t *phit = physprops->GetSurfaceData( surfacePropsHit );
@@ -925,8 +934,12 @@ void PhysFrictionEffect( Vector &vecPos, Vector vecVel, float energy, int surfac
 		
 		if ( energy < MASS10_SPEED2ENERGY(15) )
 			break;
-		
+
+#if !OLD_PARTICLES
 		DispatchParticleEffect( "impact_physics_dust", vecPos, angDirection );
+#else
+		g_pEffects->Dust( vecPos, invVecVel, 1, 16 );
+#endif
 		break;
 
 	case CHAR_TEX_CONCRETE:
@@ -934,7 +947,11 @@ void PhysFrictionEffect( Vector &vecPos, Vector vecVel, float energy, int surfac
 		if ( energy < MASS10_SPEED2ENERGY(28) )
 			break;
 
+#if !OLD_PARTICLES
 		DispatchParticleEffect( "impact_physics_dust", vecPos, angDirection );
+#else
+		g_pEffects->Dust( vecPos, invVecVel, 1, 16 );
+#endif
 		break;
 	}
 	
@@ -949,7 +966,11 @@ void PhysFrictionEffect( Vector &vecPos, Vector vecVel, float energy, int surfac
 			case CHAR_TEX_CONCRETE:
 			case CHAR_TEX_METAL:
 
+#if !OLD_PARTICLES
 				DispatchParticleEffect( "impact_physics_sparks", vecPos, angDirection );
+#else
+				g_pEffects->MetalSparks( vecPos, invVecVel );
+#endif
 				break;									
 			}
 		}

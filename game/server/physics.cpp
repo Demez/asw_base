@@ -2606,6 +2606,9 @@ void PhysCollisionWarpEffect( gamevcollisionevent_t *pEvent, surfacedata_t *phit
 #endif
 
 
+#define OLD_PARTICLES 1
+
+
 void PhysCollisionDust( gamevcollisionevent_t *pEvent, surfacedata_t *phit )
 {
 
@@ -2648,7 +2651,11 @@ void PhysCollisionDust( gamevcollisionevent_t *pEvent, surfacedata_t *phit )
 	VectorAngles( vecNormal, angNormal );
 	vecVel = Vector ( pEvent->collisionSpeed, pEvent->collisionSpeed, pEvent->collisionSpeed );
 
+#if !OLD_PARTICLES
 	DispatchParticleEffect( "impact_physics_dust", vecPos, vecVel, angNormal );
+#else
+	g_pEffects->Dust( vecPos, vecVel, 8.0f, pEvent->collisionSpeed );
+#endif
 
 }
 

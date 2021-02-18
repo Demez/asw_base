@@ -100,7 +100,10 @@ protected:
 		ST_CLASSNAME,
 	};
 
+public:
 	void DelayedRefresh();
+
+protected:
 	void PruneActors();
 	
 	// From Worldcraft

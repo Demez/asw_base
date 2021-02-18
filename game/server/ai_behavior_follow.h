@@ -171,6 +171,10 @@ public:
 	virtual void	TaskComplete( bool fIgnoreSetFailedCondition = false );
 	virtual void 	GatherConditions();
 
+	// keep looking for a player if none exist, so when one spawns in, we start following them
+	void			SetFollowPlayer( bool mode );
+	void			LookForPlayer();
+
 protected:
 
 	const Vector	&GetGoalPosition();
@@ -286,6 +290,8 @@ protected:
 protected:
 
 	//----------------------------
+
+	bool							m_bFollowPlayer;
 	
 	EHANDLE 		   				m_hFollowTarget;
 	AI_FollowNavInfo_t 				m_FollowNavGoal;

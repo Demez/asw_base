@@ -201,6 +201,7 @@ BEGIN_SIMPLE_DATADESC( AI_FollowParams_t )
 END_DATADESC();
 
 BEGIN_DATADESC( CAI_FollowBehavior )
+	DEFINE_FIELD( m_bFollowPlayer, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_hFollowTarget, FIELD_EHANDLE ),
 	DEFINE_EMBEDDED( m_FollowNavGoal ),
 	DEFINE_FIELD( m_flTimeUpdatedFollowPosition, FIELD_TIME ),
@@ -414,6 +415,35 @@ bool CAI_FollowBehavior::SetFollowGoal( CAI_FollowGoal *pGoal, bool fFinishCurSc
 
 //-------------------------------------
 
+void CAI_FollowBehavior::SetFollowPlayer( bool mode )
+{
+	m_bFollowPlayer = mode;
+}
+
+//-------------------------------------
+
+void CAI_FollowBehavior::LookForPlayer()
+{
+	if ( !m_bFollowPlayer )
+		return;
+
+	// what
+	if ( m_hFollowGoalEnt == NULL )
+		return;
+
+	if ( m_hFollowTarget != NULL )
+		return;
+
+	UTIL_FOREACHPLAYER(i)
+	{
+		UTIL_GETNEXTPLAYER(i);
+		m_hFollowGoalEnt->EnableGoal( GetOuter() );
+		break;
+	}
+}
+
+//-------------------------------------
+
 void CAI_FollowBehavior::ClearFollowGoal( CAI_FollowGoal *pGoal )
 {
 	GetOuter()->OnClearGoal( this, pGoal );
@@ -422,6 +452,7 @@ void CAI_FollowBehavior::ClearFollowGoal( CAI_FollowGoal *pGoal )
 		SetFollowTarget( NULL );
 		m_hFollowGoalEnt = NULL;
 		m_flTimeUpdatedFollowPosition = 0;
+		SetFollowPlayer( false );
 	}
 }
 
@@ -670,6 +701,8 @@ void CAI_FollowBehavior::GatherConditions( void )
 {
 	BaseClass::GatherConditions();
 
+	LookForPlayer();
+
 	if ( !GetFollowTarget() )
 	{
 		ClearCondition( COND_FOLLOW_PLAYER_IS_LIT );
@@ -819,6 +852,9 @@ int CAI_FollowBehavior::SelectFailSchedule( int failedSchedule, int failedTask, 
 
 bool CAI_FollowBehavior::ShouldFollow()
 {
+	if ( m_bFollowPlayer )
+		return true;
+
 	if ( !GetFollowTarget() )
 		return false;
 
@@ -2128,6 +2164,10 @@ void CAI_FollowGoal::EnableGoal( CAI_BaseNPC *pAI )
 	CAI_FollowBehavior *pBehavior;
 	if ( !pAI->GetBehavior( &pBehavior ) )
 		return;
+
+	bool goalIsPlayer = ( V_strcmp(GetGoalEntityName(), "!player") == 0 || V_strcmp(GetGoalEntityName(), "") == 0 );
+
+	pBehavior->SetFollowPlayer( goalIsPlayer );
 	
 	CBaseEntity *pGoalEntity = GetGoalEntity();
 	if ( !pGoalEntity )
@@ -2139,8 +2179,10 @@ void CAI_FollowGoal::EnableGoal( CAI_BaseNPC *pAI )
 		}
 	}
 
-	if ( pGoalEntity )
+	if ( pGoalEntity || goalIsPlayer )
+	{
 		pBehavior->SetFollowGoal( this );
+	}
 }
 
 //-------------------------------------

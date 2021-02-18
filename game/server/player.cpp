@@ -177,7 +177,7 @@ ConVar  player_debug_print_damage( "player_debug_print_damage", "0", FCVAR_CHEAT
 
 void CC_GiveCurrentAmmo( void )
 {
-	CBasePlayer *pPlayer = UTIL_PlayerByIndex(1);
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
 
 	if( pPlayer )
 	{
@@ -749,9 +749,12 @@ int CBasePlayer::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 
 bool CBasePlayer::WantsLagCompensationOnEntity( const CBaseEntity *entity, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits ) const
 {
-	// Team members shouldn't be adjusted unless friendly fire is on.
-	if ( !friendlyfire.GetInt() && entity->GetTeamNumber() == GetTeamNumber() )
-		return false;
+	if ( gpGlobals->teamplay )
+	{
+		// Team members shouldn't be adjusted unless friendly fire is on.
+		if ( !friendlyfire.GetInt() && entity->GetTeamNumber() == GetTeamNumber() )
+			return false;
+	}
 
 	// If this entity hasn't been transmitted to us and acked, then don't bother lag compensating it.
 	if ( pEntityTransmitBits && !pEntityTransmitBits->Get( entity->entindex() ) )
@@ -1013,7 +1016,11 @@ void CBasePlayer::DamageEffect(float flDamage, int fDamageType)
 		UTIL_ScreenFade( this, blue, 0.2, 0.4, FFADE_MODULATE );
 
 		// Very small screen shake
-		ViewPunch(QAngle(random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1)));
+		// Both -0.1 and 0.1 map to 0 when converted to integer, so all of these RandomInt
+		// calls are just expensive ways of returning zero. This code has always been this
+		// way and has never had any value. clang complains about the conversion from a
+		// literal floating-point number to an integer.
+		//ViewPunch(QAngle(random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1), random->RandomInt(-0.1,0.1)));
 
 		// Burn sound 
 		EmitSound( "Player.PlasmaDamage" );
@@ -7726,8 +7733,13 @@ void CRevertSaved::InputReload( inputdata_t &inputdata )
 	{
 		UTIL_ScreenFadeAll( m_clrRender, Duration(), HoldTime(), FFADE_OUT );
 
+#ifdef HL1_DLL
+		SetNextThink( gpGlobals->curtime + MessageTime() );
+		SetThink( &CRevertSaved::MessageThink );
+#else
 		SetNextThink( gpGlobals->curtime + LoadTime() );
 		SetThink( &CRevertSaved::LoadThink );
+#endif
 
 		CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
 
@@ -7766,6 +7778,7 @@ class CMovementSpeedMod : public CPointEntity
 	DECLARE_CLASS( CMovementSpeedMod, CPointEntity );
 public:
 	void InputSpeedMod(inputdata_t &data);
+	void InputSpeedModPlayer(inputdata_t &data, CBasePlayer* pPlayer);
 
 private:
 	int GetDisabledButtonMask( void );
@@ -7818,75 +7831,80 @@ int CMovementSpeedMod::GetDisabledButtonMask( void )
 
 void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 {
-	CBasePlayer *pPlayer = NULL;
-
 	if ( data.pActivator && data.pActivator->IsPlayer() )
 	{
-		pPlayer = (CBasePlayer *)data.pActivator;
+		CBasePlayer *pPlayer = (CBasePlayer *)data.pActivator;
+		InputSpeedModPlayer(data, pPlayer);
 	}
 	else if ( !g_pGameRules->IsDeathmatch() )
 	{
-		pPlayer = UTIL_GetNearestPlayer( GetAbsOrigin() );
+		// should this be applied to all players? idk
+		UTIL_FOREACHPLAYER(i)
+		{
+			UTIL_GETNEXTPLAYER(i);
+			InputSpeedModPlayer(data, pPlayer);
+		}
 	}
+}
 
-	if ( pPlayer )
+
+void CMovementSpeedMod::InputSpeedModPlayer(inputdata_t &data, CBasePlayer *pPlayer)
+{
+	if ( data.value.Float() != 1.0f )
 	{
-		if ( data.value.Float() != 1.0f )
+		// Holster weapon immediately, to allow it to cleanup
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) )
 		{
-			// Holster weapon immediately, to allow it to cleanup
-			if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) )
+			if ( pPlayer->GetActiveWeapon() )
 			{
-				if ( pPlayer->GetActiveWeapon() )
-				{
-					pPlayer->Weapon_SetLast( pPlayer->GetActiveWeapon() );
-					pPlayer->GetActiveWeapon()->Holster();
-					pPlayer->ClearActiveWeapon();
-				}
+				pPlayer->Weapon_SetLast( pPlayer->GetActiveWeapon() );
+				pPlayer->GetActiveWeapon()->Holster();
+				pPlayer->ClearActiveWeapon();
+			}
 				
-				pPlayer->HideViewModels();
-			}
-
-			// Turn off the flashlight
-			if ( pPlayer->FlashlightIsOn() )
-			{
-				pPlayer->FlashlightTurnOff();
-			}
-			
-			// Disable the flashlight's further use
-			pPlayer->SetFlashlightEnabled( false );
-			pPlayer->DisableButtons( GetDisabledButtonMask() );
-
-			// Hide the HUD
-			if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
-			{
-				pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;
-			}
+			pPlayer->HideViewModels();
 		}
-		else
+
+		// Turn off the flashlight
+		if ( pPlayer->FlashlightIsOn() )
 		{
-			// Bring the weapon back
-			if  ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) && pPlayer->GetActiveWeapon() == NULL )
-			{
-				pPlayer->SetActiveWeapon( pPlayer->Weapon_GetLast() );
-				if ( pPlayer->GetActiveWeapon() )
-				{
-					pPlayer->GetActiveWeapon()->Deploy();
-				}
-			}
+			pPlayer->FlashlightTurnOff();
+		}
+			
+		// Disable the flashlight's further use
+		pPlayer->SetFlashlightEnabled( false );
+		pPlayer->DisableButtons( GetDisabledButtonMask() );
 
-			// Allow the flashlight again
-			pPlayer->SetFlashlightEnabled( true );
-			pPlayer->EnableButtons( GetDisabledButtonMask() );
-
-			// Restore the HUD
-			if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
+		// Hide the HUD
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
+		{
+			pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;
+		}
+	}
+	else
+	{
+		// Bring the weapon back
+		if  ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_WEAPONS ) && pPlayer->GetActiveWeapon() == NULL )
+		{
+			pPlayer->SetActiveWeapon( pPlayer->Weapon_GetLast() );
+			if ( pPlayer->GetActiveWeapon() )
 			{
-				pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_ALL;
+				pPlayer->GetActiveWeapon()->Deploy();
 			}
 		}
 
-		pPlayer->SetLaggedMovementValue( data.value.Float() );
+		// Allow the flashlight again
+		pPlayer->SetFlashlightEnabled( true );
+		pPlayer->EnableButtons( GetDisabledButtonMask() );
+
+		// Restore the HUD
+		if ( HasSpawnFlags( SF_SPEED_MOD_SUPPRESS_HUD ) )
+		{
+			pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_ALL;
+		}
 	}
+
+	pPlayer->SetLaggedMovementValue( data.value.Float() );
 }
 
 

@@ -123,7 +123,7 @@ public:
 	virtual		void		CheckSplitScreenMimic( int nSlot, CUserCmd *cmd, CUserCmd *pPlayer0Command );
 
 // Private Implementation
-protected:
+// protected:
 	// Implementation specific initialization
 	virtual void		Init_Camera( void );
 	void		Init_Keyboard( void );
@@ -177,7 +177,7 @@ protected:
 	bool		m_fTrackIRAvailable;
 	// TrackIR
 
-protected:
+// protected:
 	typedef struct
 	{
 		unsigned int AxisFlags;

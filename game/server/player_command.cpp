@@ -393,8 +393,8 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	}
 
 	// TrackIR
-	player->SetEyeAngleOffset(ucmd->headangles);
-	player->SetEyeOffset(ucmd->headoffset);
+	// player->SetEyeAngleOffset(ucmd->headangles);
+	// player->SetEyeOffset(ucmd->headoffset);
 	// TrackIR
 
 	// Call standard client pre-think

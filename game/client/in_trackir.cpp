@@ -218,8 +218,8 @@ void CInput::TrackIRMove( float frametime, CUserCmd *cmd )
 		pPlayer->SetEyeOffset(tirEye);
 		pPlayer->SetEyeAngleOffset(viewangles);
 
-		cmd->headangles = viewangles;
-		cmd->headoffset = tirEye;
+		// cmd->headangles = viewangles;
+		// cmd->headoffset = tirEye;
 	}
 #endif
 }

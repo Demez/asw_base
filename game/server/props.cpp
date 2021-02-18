@@ -2724,7 +2724,7 @@ void CPhysicsProp::Spawn( )
 		else
 		{
 			// don't spawn clientside props on server
-			UTIL_Remove( this );
+			// UTIL_Remove( this );
 			return;
 		}
 	}

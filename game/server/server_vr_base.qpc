@@ -1,0 +1,33 @@
+// ---------------------------------------------------------------
+// server_vr_base.qpc
+// ---------------------------------------------------------------
+
+macro SRC_DIR "../.."                               [!$SRC_DIR]
+macro SERVER_BASE_DIR "$SRC_DIR/game/server"        [!$SERVER_BASE_DIR]
+macro VR_DIR          "$SRC_DIR/game/server/vr"     [!$VR_DIR]
+
+include "$SRC_DIR/game/shared/shared_vr_base.qpc"
+
+configuration
+{
+	general
+	{
+		include_directories
+		{
+			"$VR_DIR"
+		}
+	}
+}
+
+files
+{
+	folder "VR"
+	{
+		"$VR_DIR/vr_server.cpp"
+		"$VR_DIR/vr_server.h"
+		"$VR_DIR/vr_server_network.cpp"
+		"$VR_DIR/vr_server_network.h"
+	}
+}
+
+

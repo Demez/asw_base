@@ -3,12 +3,43 @@
 // ---------------------------------------------------------------
 macro   "SOURCESDK" "1"
 
-include "_qpc_scripts/_projects.qpc_base"
-include "_qpc_scripts/_groups.qpc_base"
-
 configurations
 {
 	"Debug"
 	"Release"
+}
+
+
+project "client"                    "game/client/client_swarm.qpc" [$SWARM]
+project "server"                    "game/server/server_swarm.qpc" [$SWARM]
+project "missionchooser"	        "game/missionchooser/missionchooser_swarm.qpc" [$SWARM]
+project "shaderlib"                 "materialsystem/shaderlib/shaderlib.qpc"
+project "game_shader"               "materialsystem/stdshaders/_game_shader_dx9.qpc"
+project "responserules_runtime"     "responserules/runtime/responserules_runtime.qpc"
+
+
+group "gamedlls"
+{
+	"client"
+	"server"
+}
+
+group "shaders"
+{
+	"game_shader"
+	"shaderlib"
+}
+
+group "everything"
+{
+	folder "Game Binaries"
+	{
+		contains "gamedlls"
+	}
+	
+	"missionchooser"
+	"responserules_runtime"
+	
+	contains "shaders"
 }
 

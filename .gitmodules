@@ -1,3 +1,6 @@
 [submodule "devtools/qpc"]
 	path = devtools/qpc
 	url = https://github.com/quiverteam/QuiverProjectCreator
+[submodule "thirdparty/openvr"]
+	path = thirdparty/openvr
+	url = https://github.com/ValveSoftware/openvr.git

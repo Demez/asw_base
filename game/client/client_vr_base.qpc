@@ -1,0 +1,81 @@
+// ---------------------------------------------------------------
+// client_vr_base.qpc
+// ---------------------------------------------------------------
+
+macro SRC_DIR         "../.."                           [!$SRC_DIR]
+macro CLIENT_BASE_DIR "$SRC_DIR/game/client"            [!$CLIENT_BASE_DIR]
+macro VR_DIR          "$SRC_DIR/game/client/vr"         [!$VR_DIR]
+macro OPENVR_DIR      "$SRC_DIR/thirdparty/openvr"      [!$OPENVR_DIR]
+macro MINHOOK_DIR     "$SRC_DIR/thirdparty/minhook"     [!$MINHOOK_DIR]
+
+include "$SRC_DIR/game/shared/shared_vr_base.qpc"
+
+// maybe setup some post build event thing to copy openvr_api.dll and minhook dll to the game's bin folder?
+// not really sure
+
+configuration
+{
+	general
+	{
+		include_directories
+		{
+			"$VR_DIR"
+			"$OPENVR_DIR/headers"
+			"$MINHOOK_DIR/include"
+		}
+	}
+	
+	compiler
+	{
+		options
+		{
+			"/ignore:4005"
+		}
+	}
+	
+	linker
+	{
+		libraries
+		{
+			"$OPENVR_DIR/lib/win32/openvr_api.lib"
+			
+			"$MINHOOK_DIR/lib/libMinHook-x86-v120-mtd.lib"      [$DEBUG]
+			"$MINHOOK_DIR/lib/libMinHook-x86-v120-mt.lib"       [$RELEASE]
+			
+			"psapi.lib"
+			"d3d11.lib"
+			"d3d9.lib"
+		}
+	}
+}
+
+files
+{
+	folder "VR"
+	{
+		"$VR_DIR/vr_openvr.cpp"
+		{
+			precompiled_header "none"
+		}
+		
+		"$VR_DIR/vr_openvr.h"
+		
+		"$VR_DIR/vr.cpp"
+		"$VR_DIR/vr.h"
+		"$VR_DIR/vr_client_network.cpp"
+		"$VR_DIR/vr_client_network.h"
+		"$VR_DIR/vr_viewrender.cpp"
+		"$VR_DIR/vr_viewrender.h"
+		"$VR_DIR/vr_msg_hooks.cpp"
+		
+		// ripped from source 2013
+		"$VR_DIR/client_virtualreality.cpp"
+		{
+			build "false"
+		}
+		
+		"$VR_DIR/client_virtualreality.h"
+	}
+}
+
+

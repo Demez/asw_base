@@ -352,10 +352,11 @@ void CAI_PlaneSolver::GenerateObstacleNpcs( const AILocalMoveGoal_t &goal, float
 				}
 			}
 		}
-
-		CBaseEntity *pPlayer = UTIL_GetNearestPlayer(m_pNpc->GetAbsOrigin());
-		if ( pPlayer )
+			
+		UTIL_FOREACHPLAYER(i)
 		{
+			UTIL_GETNEXTPLAYER(i);
+
 			Vector mins, maxs;
 			
 			pPlayer->CollisionProp()->WorldSpaceSurroundingBounds( &mins, &maxs );

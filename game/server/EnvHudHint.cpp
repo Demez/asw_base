@@ -72,7 +72,7 @@ void CEnvHudHint::Precache( void )
 //-----------------------------------------------------------------------------
 void CEnvHudHint::InputShowHudHint( inputdata_t &inputdata )
 {
-	if ( AllPlayers() )
+	if ( AllPlayers() || g_pGameRules->IsCoOp() )
 	{
 		CReliableBroadcastRecipientFilter user;
 		UserMessageBegin(user, "KeyHintText");

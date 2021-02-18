@@ -722,7 +722,7 @@ void CPropVehicleChoreoGeneric::InputEnterVehicle( inputdata_t &inputdata )
 	if ( pPlayer == NULL )
 	{
 		// Activator was not a player, just grab the single-player player.
-		pPlayer = AI_GetSinglePlayer();
+		pPlayer = UTIL_GetNearestPlayer( GetAbsOrigin() );
 		if ( pPlayer == NULL )
 			return;
 	}
@@ -752,7 +752,7 @@ void CPropVehicleChoreoGeneric::InputEnterVehicleImmediate( inputdata_t &inputda
 	if ( pPlayer == NULL )
 	{
 		// Activator was not a player, just grab the singleplayer player.
-		pPlayer = AI_GetSinglePlayer();
+		pPlayer = UTIL_GetNearestPlayer( GetAbsOrigin() );
 		if ( pPlayer == NULL )
 			return;
 	}

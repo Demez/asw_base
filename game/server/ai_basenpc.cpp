@@ -3471,7 +3471,7 @@ void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
 {
 	if ( GetSleepState() > AISS_AWAKE )
 	{
-		CBasePlayer *pLocalPlayer = UTIL_GetLocalPlayer();
+		CBasePlayer *pLocalPlayer = UTIL_GetNearestPlayerPreferVisible(this);
 		if ( !pLocalPlayer )
 		{
 			Warning( "CAI_BaseNPC::UpdateSleepState called with NULL pLocalPlayer\n" );
@@ -8265,6 +8265,16 @@ Vector CAI_BaseNPC::EyePosition( void )
 	return BaseClass::EyePosition();
 }
 
+bool CAI_BaseNPC::Weapon_CanUse( CBaseCombatWeapon *pWeapon )
+{
+	if ( pWeapon->CanBePickedUpByNPCs() )
+	{
+		return BaseClass::Weapon_CanUse( pWeapon );
+	}
+
+	return false;
+}
+
 //------------------------------------------------------------------------------
 // Purpose :
 // Input   :
@@ -12115,7 +12125,7 @@ bool CAI_BaseNPC::CineCleanup()
 			{
 				SetLocalOrigin( origin );
 
-				int drop = UTIL_DropToFloor( this, GetAITraceMask(), UTIL_GetNearestVisiblePlayer( this ) );
+				int drop = UTIL_DropToFloor( this, GetAITraceMask(), UTIL_GetNearestPlayerPreferVisible( this ) );
 
 				// Origin in solid?  Set to org at the end of the sequence
 				if ( ( drop < 0 ) || sv_test_scripted_sequences.GetBool() )

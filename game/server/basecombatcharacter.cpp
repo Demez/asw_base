@@ -1655,17 +1655,10 @@ void CBaseCombatCharacter::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector
 
 			if( FClassnameIs( pWeapon, "weapon_smg1" ) )
 			{
-				if ( CBasePlayer *pPlayer = UTIL_PlayerByIndex( 1 ) )
-				{
-					// Drop enough ammo to kill 2 of me.
-					// Figure out how much damage one piece of this type of ammo does to this type of enemy.
-					float flAmmoDamage = g_pGameRules->GetAmmoDamage( UTIL_PlayerByIndex(1), this, pWeapon->GetPrimaryAmmoType() );
-					pWeapon->m_iClip1 = (GetMaxHealth() / flAmmoDamage) * 2;
-				}
-				else
-				{
-					pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
-				}
+				// Drop enough ammo to kill 2 of me.
+				// Figure out how much damage one piece of this type of ammo does to this type of enemy.
+				float flAmmoDamage = g_pGameRules->GetAmmoDamage( UTIL_GetNearestPlayer( GetAbsOrigin() ), this, pWeapon->GetPrimaryAmmoType() );
+				pWeapon->m_iClip1 = (GetMaxHealth() / flAmmoDamage) * 2;
 			}
 		}
 		if ( pWeapon->UsesClipsForAmmo2() )
@@ -3144,7 +3137,6 @@ CBaseEntity *CBaseCombatCharacter::FindMissTarget( void )
 	CBaseEntity *pMissCandidates[ MAX_MISS_CANDIDATES ];
 	int numMissCandidates = 0;
 
-	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
 	CBaseEntity *pEnts[256];
 	Vector		radius( 100, 100, 100);
 	Vector		vecSource = GetAbsOrigin();
@@ -3157,7 +3149,7 @@ CBaseEntity *CBaseCombatCharacter::FindMissTarget( void )
 			continue;
 
 		// New rule for this system. Don't shoot what the player won't see.
-		if ( pPlayer && !pPlayer->FInViewCone( pEnts[ i ] ) )
+		if ( UTIL_IsAnyPlayerLookingAtEntity( pEnts[ i ] ) )
 			continue;
 
 		if ( numMissCandidates >= MAX_MISS_CANDIDATES )

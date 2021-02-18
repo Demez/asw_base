@@ -366,7 +366,7 @@ public:
 
 	bool					IsPlayingBack() const			{ return m_bIsPlayingBack; }
 	bool					IsPaused() const				{ return m_bPaused; }
-	bool					IsMultiplayer() const			{ return m_bMultiplayer; }
+	bool					IsMultiplayer() const			{ return false; /*m_bMultiplayer;*/ }
 
 	bool					IsInterruptable();
 	virtual void			ClearInterrupt();

@@ -3685,7 +3685,7 @@ void CAI_BaseNPC::RunTask( const Task_t *pTask )
 		{
 			// if ( AI_IsSinglePlayer() )
 			{
-				GetNavigator()->SetAllowBigStep( UTIL_GetLocalPlayer() );
+				GetNavigator()->SetAllowBigStep( UTIL_GetNearestPlayer( GetAbsOrigin() ) );
 			}
 			ChainRunTask( TASK_MOVE_AWAY_PATH, 48 );
 		}

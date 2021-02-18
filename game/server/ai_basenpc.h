@@ -568,6 +568,7 @@ public:
 
 	//---------------------------------
 
+	virtual bool			Weapon_CanUse( CBaseCombatWeapon *pWeapon );
 	virtual bool			IsNPC( void ) const { return true; }
 
 	//---------------------------------

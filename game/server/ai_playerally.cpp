@@ -389,12 +389,11 @@ void CAI_PlayerAlly::DisplayDeathMessage( void )
 	if ( npc_ally_deathmessage.GetBool() == 0 )
 		return;
 
-	CBaseEntity *pPlayer = AI_GetSinglePlayer();
-
-	if ( pPlayer )	
+	UTIL_FOREACHPLAYER(i)
 	{
-		UTIL_ShowMessage( GetDeathMessageText(), ToBasePlayer( pPlayer ) );
-		ToBasePlayer(pPlayer)->NotifySinglePlayerGameEnding();
+		UTIL_GETNEXTPLAYER(i);
+		UTIL_ShowMessage( GetDeathMessageText(), pPlayer );
+		pPlayer->NotifySinglePlayerGameEnding();
 	}
 
 	CBaseEntity *pReload = CreatePlayerLoadSave( GetAbsOrigin(), 1.5f, 8.0f, 4.5f );
@@ -430,24 +429,28 @@ void CAI_PlayerAlly::GatherConditions( void )
 		SetCondition( COND_TALKER_CLIENTUNSEEN );
 	}
 
-	CBasePlayer *pLocalPlayer = AI_GetSinglePlayer();
+	bool someoneAlive = false;
 
-	if ( !pLocalPlayer )
+	UTIL_FOREACHPLAYER(i)
 	{
-		if ( AI_IsSinglePlayer() )
-			SetCondition( COND_TALKER_PLAYER_DEAD );
-		return;
+		CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
+
+		someoneAlive |= pPlayer && pPlayer->IsAlive();
+		if ( someoneAlive )
+		{
+			break;
+		}
 	}
 
-	if ( !pLocalPlayer->IsAlive() )
+	if ( !someoneAlive )
 	{
 		SetCondition( COND_TALKER_PLAYER_DEAD );
 	}
 	
 	if ( HasCondition( COND_SEE_PLAYER ) )
 	{
-				
-		bool bPlayerIsLooking = false;
+		// what is this other player looking code?
+		/*bool bPlayerIsLooking = false;
 		if ( ( pLocalPlayer->GetAbsOrigin() - GetAbsOrigin() ).Length2DSqr() < Square(TALKER_STARE_DIST) )
 		{
 			if ( pLocalPlayer->FInViewCone( EyePosition() ) )
@@ -455,9 +458,9 @@ void CAI_PlayerAlly::GatherConditions( void )
 				if ( pLocalPlayer->GetSmoothedVelocity().LengthSqr() < Square( 100 ) )
 					bPlayerIsLooking = true;
 			}
-		}
+		}*/
 		
-		if ( bPlayerIsLooking )
+		if ( UTIL_IsAnyPlayerLookingAtEntity( this ) )
 		{
 			SetCondition( COND_TALKER_PLAYER_STARING );
 			if ( m_flTimePlayerStartStare == 0 )
@@ -483,10 +486,9 @@ void CAI_PlayerAlly::GatherEnemyConditions( CBaseEntity *pEnemy )
 		{
 			if( Classify() == CLASS_PLAYER_ALLY_VITAL && hl2_episodic.GetBool() )
 			{
-				CBasePlayer *pPlayer = AI_GetSinglePlayer();
-
-				if( pPlayer )
+				UTIL_FOREACHPLAYER(i)
 				{
+					UTIL_GETNEXTPLAYER(i);
 				
 					// If I can see the player, and the player would see this enemy if he turned around...
 					if( !pPlayer->FInViewCone(pEnemy) && FVisible( pPlayer ) && pPlayer->FVisible(pEnemy) )
@@ -1036,10 +1038,10 @@ void CAI_PlayerAlly::StartTask( const Task_t *pTask )
 	{
 	case TASK_MOVE_AWAY_PATH:
 		{
-			if ( HasCondition( COND_PLAYER_PUSHING ) && AI_IsSinglePlayer() )
+			if ( HasCondition( COND_PLAYER_PUSHING ) )
 			{
 				// @TODO (toml 10-22-04): cope with multiplayer push
-				GetMotor()->SetIdealYawToTarget( UTIL_GetLocalPlayer()->WorldSpaceCenter() );
+				GetMotor()->SetIdealYawToTarget( UTIL_GetNearestPlayer( GetAbsOrigin() )->WorldSpaceCenter() );
 			}
 			BaseClass::StartTask( pTask );
 			break;
@@ -1205,12 +1207,16 @@ void CAI_PlayerAlly::Event_Killed( const CTakeDamageInfo &info )
 	// notify the player
 	if ( IsInPlayerSquad() )
 	{
-		CBasePlayer *player = AI_GetSinglePlayer();
-		if ( player )
+		UTIL_FOREACHPLAYER(i)
 		{
-			variant_t emptyVariant;
-			player->AcceptInput( "OnSquadMemberKilled", this, this, emptyVariant, 0 );
+			CBasePlayer* player = UTIL_PlayerByIndex( 1 );
+			if ( player )
+			{
+				variant_t emptyVariant;
+				player->AcceptInput( "OnSquadMemberKilled", this, this, emptyVariant, 0 );
+			}
 		}
+
 	}
 
 	if ( GetSpeechSemaphore( this )->GetOwner() == this )
@@ -1492,12 +1498,13 @@ bool CAI_PlayerAlly::IsOkToSpeak( ConceptCategory_t category, bool fRespondingTo
 		}
 
 		// Don't talk if we're too far from the player
-		CBaseEntity *pPlayer = AI_GetSinglePlayer();
-		if ( pPlayer )
+		float flDist = sv_npc_talker_maxdist.GetFloat();
+		flDist *= flDist;
+
+		UTIL_FOREACHPLAYER(i)
 		{
-			float flDist = sv_npc_talker_maxdist.GetFloat();
-			flDist *= flDist;
-			if ( (pPlayer->WorldSpaceCenter() - WorldSpaceCenter()).LengthSqr() > flDist )
+			CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
+			if ( pPlayer && (pPlayer->WorldSpaceCenter() - WorldSpaceCenter()).LengthSqr() > flDist )
 				return false;
 		}
 	}

@@ -2160,7 +2160,13 @@ bool CBaseFlex::EnterSceneSequence( CChoreoScene *scene, CChoreoEvent *event, bo
 	CAI_BaseNPC *myNpc = MyNPCPointer( );
 
 	if (!myNpc)
+	{
+		// In multiplayer, we allow players to play scenes
+		if ( IsPlayer() )
+			return true;
+
 		return false;
+	}
 
 	// 2 seconds past current event, or 0.2 seconds past end of scene, whichever is shorter
 	float flDuration = MIN( 2.0, MIN( event->GetEndTime() - scene->GetTime() + 2.0, scene->FindStopTime() - scene->GetTime() + 0.2 ) );
@@ -2790,7 +2796,7 @@ void CFlexCycler::Think( void )
 	Vector forward, right, up;
 	GetVectors( &forward, &right, &up );
 
-	CBaseEntity *pPlayer = (CBaseEntity *)UTIL_GetLocalPlayer();
+	CBaseEntity *pPlayer = (CBaseEntity *)UTIL_GetNearestVisiblePlayer( this );
 	if (pPlayer)
 	{
 		if (pPlayer->GetSmoothedVelocity().Length() != 0 && DotProduct( forward, pPlayer->EyePosition() - EyePosition()) > 0.5)

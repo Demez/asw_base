@@ -1175,7 +1175,7 @@ CMultiplayRules::CMultiplayRules()
 	//-----------------------------------------------------------------------------
 	void CMultiplayRules::LoadVoiceCommandScript( void )
 	{
-		KeyValues *pKV = new KeyValues( "VoiceCommands" );
+		/*KeyValues *pKV = new KeyValues( "VoiceCommands" );
 
 		if ( pKV->LoadFromFile( filesystem, "scripts/voicecommands.txt", "GAME" ) )
 		{
@@ -1220,7 +1220,7 @@ CMultiplayRules::CMultiplayRules()
 			}
 		}
 
-		pKV->deleteThis();
+		pKV->deleteThis();*/
 	}
 
 #ifndef CLIENT_DLL
@@ -1291,7 +1291,7 @@ CMultiplayRules::CMultiplayRules()
 	VoiceCommandMenuItem_t *CMultiplayRules::VoiceCommand( CBaseMultiplayerPlayer *pPlayer, int iMenu, int iItem )
 	{
 		// have the player speak the concept that is in a particular menu slot
-		if ( !pPlayer )
+		/*if ( !pPlayer )
 			return NULL;
 
 		if ( iMenu < 0 || iMenu >= m_VoiceCommandMenus.Count() )
@@ -1372,7 +1372,7 @@ CMultiplayRules::CMultiplayRules()
 
 			pExpresser->DisallowMultipleScenes();
 			return pItem;
-		}
+		}*/
 
 		return NULL;
 	}
@@ -1411,7 +1411,7 @@ CMultiplayRules::CMultiplayRules()
 
 	const char *CMultiplayRules::GetVoiceCommandSubtitle( int iMenu, int iItem )
 	{
-		Assert( iMenu >= 0 && iMenu < m_VoiceCommandMenus.Count() );
+		/*Assert( iMenu >= 0 && iMenu < m_VoiceCommandMenus.Count() );
 		if ( iMenu < 0 || iMenu >= m_VoiceCommandMenus.Count() )
 			return "";
 
@@ -1423,13 +1423,14 @@ CMultiplayRules::CMultiplayRules()
 
 		Assert( pItem );
 
-		return pItem->m_szSubtitle;
+		return pItem->m_szSubtitle;*/
+		return "";
 	}
 
 	// Returns false if no such menu is declared or if it's an empty menu
 	bool CMultiplayRules::GetVoiceMenuLabels( int iMenu, KeyValues *pKV )
 	{
-		Assert( iMenu >= 0 && iMenu < m_VoiceCommandMenus.Count() );
+		/*Assert( iMenu >= 0 && iMenu < m_VoiceCommandMenus.Count() );
 		if ( iMenu < 0 || iMenu >= m_VoiceCommandMenus.Count() )
 			return false;
 
@@ -1444,7 +1445,8 @@ CMultiplayRules::CMultiplayRules()
 			pKV->AddSubKey( pLabelKV );
 		}
 
-		return iNumItems > 0;
+		return iNumItems > 0;*/
+		return false;
 	}
 
 #endif

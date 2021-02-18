@@ -23,7 +23,7 @@ enum debughistorycategories_t
 	MAX_HISTORY_CATEGORIES,
 };
 
-#undef DISABLE_DEBUG_HISTORY
+// #undef DISABLE_DEBUG_HISTORY
 
 #if defined(DISABLE_DEBUG_HISTORY)
 #define ADD_DEBUG_HISTORY( category, line )		((void)0)

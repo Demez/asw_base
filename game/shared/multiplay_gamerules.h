@@ -243,7 +243,7 @@ protected:
 #endif
 
 	private:
-		CUtlVector< CUtlVector< VoiceCommandMenuItem_t > > m_VoiceCommandMenus;
+		// CUtlVector< CUtlVector< VoiceCommandMenuItem_t > > m_VoiceCommandMenus;
 };
 
 inline CMultiplayRules* MultiplayRules()

@@ -330,8 +330,33 @@ void CFogController::InputStartFogTransition(inputdata_t &data)
 {
 	SetThink( &CFogController::SetLerpValues );
 
+	if ( !( m_iChangedVariables & FOG_CONTROLLER_COLORPRIMARY_LERP ) )
+	{
+		m_fog.colorPrimaryLerpTo = m_fog.colorPrimary;
+	}
+
+	if ( !( m_iChangedVariables & FOG_CONTROLLER_COLORSECONDARY_LERP ) )
+	{
+		m_fog.colorSecondaryLerpTo = m_fog.colorSecondary;
+	} 
+
+	if ( !( m_iChangedVariables & FOG_CONTROLLER_START_LERP ) )
+	{
+		m_fog.startLerpTo= m_fog.start;
+	}
+
+	if ( !( m_iChangedVariables & FOG_CONTROLLER_END_LERP ) )
+	{
+		m_fog.endLerpTo = m_fog.end;
+	}
+
+	if ( !( m_iChangedVariables & FOG_CONTROLLER_MAXDENSITY_LERP ) )
+	{
+		m_fog.maxdensityLerpTo = m_fog.maxdensity;
+	}
+
 	m_fog.lerptime = gpGlobals->curtime + m_fog.duration + 0.1;
-    SetNextThink( gpGlobals->curtime + m_fog.duration );
+	SetNextThink( gpGlobals->curtime + m_fog.duration );
 }
 
 void CFogController::SetLerpValues( void )
@@ -418,16 +443,20 @@ void CFogSystem::LevelInitPostEntity( void )
 {
 	InitMasterController();
 
-	// HACK: Singleplayer games don't get a call to CBasePlayer::Spawn on level transitions.
+	// Demez fix
+	// HACK: Coop and Singleplayer games don't get a call to CBasePlayer::Spawn on level transitions.
 	// CBasePlayer::Activate is called before this is called so that's too soon to set up the fog controller.
 	// We don't have a hook similar to Activate that happens after LevelInitPostEntity
 	// is called, or we could just do this in the player itself.
-	if ( gpGlobals->maxClients == 1 )
+	if ( gpGlobals->maxClients == 1 || gpGlobals->coop )
 	{
-		CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-		if ( pPlayer && ( pPlayer->m_PlayerFog.m_hCtrl.Get() == NULL ) )
+		UTIL_FOREACHPLAYER(i)
 		{
-			pPlayer->InitFogController();
+			CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+			if ( pPlayer && ( pPlayer->m_PlayerFog.m_hCtrl.Get() == NULL ) )
+			{
+				pPlayer->InitFogController();
+			}
 		}
 	}
 }

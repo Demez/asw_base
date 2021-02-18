@@ -548,35 +548,14 @@ void IN_DuckToggle( const CCommand &args )
 
 void IN_DuckDown( const CCommand &args ) 
 {
-#if defined ( _X360 )
-	SplitScreenConVarRef option_duck_method( "option_duck_method" );
-
-	if ( option_duck_method.IsValid() && option_duck_method.GetBool( GET_ACTIVE_SPLITSCREEN_SLOT() ) )
-	{
-		IN_DuckToggle( args );
-	}
-	else
-#endif
-	{
-		KeyDown(&in_duck, args[1] );
-		IN_ClearDuckToggle();
-	}
+	KeyDown(&in_duck, args[1] );
+	IN_ClearDuckToggle();
 }
+
 void IN_DuckUp( const CCommand &args ) 
 {
-#if defined ( _X360 )
-	SplitScreenConVarRef option_duck_method( "option_duck_method" );
-
-	if ( option_duck_method.IsValid() && option_duck_method.GetBool( GET_ACTIVE_SPLITSCREEN_SLOT() ) )
-	{
-		// intentionally blank
-	}
-	else
-#endif
-	{
-		KeyUp(&in_duck, args[1] );
-		IN_ClearDuckToggle();
-	}
+	KeyUp(&in_duck, args[1] );
+	IN_ClearDuckToggle();
 }
 
 void IN_ReloadDown( const CCommand &args ) {KeyDown(&in_reload, args[1] );}
@@ -1540,6 +1519,8 @@ CUserCmd *CInput::GetUserCmd( int nSlot, int sequence_number )
 	return usercmd;
 }
 
+ConVar demez_cl_auto_bhop("d_cl_auto_bhop", "0", 0, "Enable auto jumping whenever jump is held down and you are standing on something");
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : bits - 
@@ -1553,10 +1534,28 @@ static void CalcButtonBits( int nSlot, int& bits, int in_button, int in_ignore, 
 {
 	kbutton_t::Split_t *pButtonState = &button->GetPerUser( nSlot );
 
+	// OLD
+	// Down or still down?
+	/*if ( pButtonState->state & 3 )
+	{
+		bits |= in_button;
+	}*/
+
+	// NEW
 	// Down or still down?
 	if ( pButtonState->state & 3 )
 	{
-		bits |= in_button;
+		if ( demez_cl_auto_bhop.GetBool() && in_button == IN_JUMP )
+		{
+			if ( C_BasePlayer::GetLocalPlayer() && C_BasePlayer::GetLocalPlayer()->GetGroundEntity() != NULL )
+			{
+				bits |= in_button;
+			}
+		}
+		else
+		{
+			bits |= in_button;
+		}
 	}
 
 	int clearmask = ~2;

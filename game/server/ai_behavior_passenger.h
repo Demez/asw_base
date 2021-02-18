@@ -194,6 +194,12 @@ protected:
 
 	bool	IsPassengerHostile( void );
 
+	// ---------------------------------------------
+
+	CBaseEntity* GetDriver();
+
+	// ---------------------------------------------
+
 	passengerVehicleState_t			m_vehicleState;			// Internal vehicle state
 
 	CHandle	<CPropVehicleDriveable>	m_hVehicle;				// The vehicle we're bound to

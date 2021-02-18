@@ -203,13 +203,25 @@ void CAI_PassengerBehavior::AddPhysicsPush( float force )
 	m_hVehicle->VPhysicsGetObject()->ApplyForceOffset( vecForce, GetOuter()->GetAbsOrigin() );
 }
 
+
+CBaseEntity* CAI_PassengerBehavior::GetDriver()
+{
+	if ( m_hVehicle )
+	{
+		return m_hVehicle->GetDriver();
+	}
+	
+	return NULL;
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
 bool CAI_PassengerBehavior::IsPassengerHostile( void )
 {
-	CBaseEntity *pPlayer = AI_GetSinglePlayer();
+	CBaseEntity *pPlayer = GetDriver();
 	
 	// If the player hates or fears the passenger, they're hostile
 	if ( GetOuter()->IRelationType( pPlayer ) == D_HT || GetOuter()->IRelationType( pPlayer ) == D_FR )
@@ -224,8 +236,13 @@ bool CAI_PassengerBehavior::IsPassengerHostile( void )
 void CAI_PassengerBehavior::InitVehicleState( void )
 {
 	// Set the player's state
-	CBasePlayer *pPlayer = AI_GetSinglePlayer();
-	m_vehicleState.m_bPlayerInVehicle = ( pPlayer && pPlayer->IsInAVehicle() && pPlayer->GetServerVehicle() == m_hVehicle->GetServerVehicle() );
+	CBaseEntity *pDriver = GetDriver();
+	
+	if ( pDriver && pDriver->IsPlayer() )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer*)pDriver;
+		m_vehicleState.m_bPlayerInVehicle = ( pPlayer && pPlayer->IsInAVehicle() && pPlayer->GetServerVehicle() == m_hVehicle->GetServerVehicle() );
+	}
 
 	// Update our vehicle state so we don't confuse our previous velocity on the first frame!
 	m_vehicleState.m_bWasBoosting = false;
@@ -1287,9 +1304,10 @@ void CAI_PassengerBehavior::GatherVehicleStateConditions( void )
 	ClearCondition( COND_PASSENGER_PLAYER_ENTERED_VEHICLE );
 	ClearCondition( COND_PASSENGER_PLAYER_EXITED_VEHICLE );
 
-	CBasePlayer *pPlayer = AI_GetSinglePlayer();
-	if ( pPlayer )
+	CBaseEntity *pDriver = GetDriver();
+	if ( pDriver && pDriver->IsPlayer() )
 	{
+		CBasePlayer *pPlayer = (CBasePlayer*)pDriver;
 		if ( pPlayer->IsInAVehicle() && pPlayer->GetVehicle() == m_hVehicle->GetServerVehicle() )
 		{
 			if ( m_vehicleState.m_bPlayerInVehicle == false )

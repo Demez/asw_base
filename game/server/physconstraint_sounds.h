@@ -198,6 +198,10 @@ Vector VelocitySampler::GetRelativeAngularVelocity( IPhysicsObject *pObj, IPhysi
 {
 	Assert(pObj);
 
+	// hmm
+	if ( !pObj )
+		return Vector(0, 0, 0);
+
 	if ( pReferenceFrame )
 	{
 		Vector childVelocityLocal, parentVelocityLocal, childVelocityWorld, parentVelocityWorld;

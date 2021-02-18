@@ -2019,7 +2019,14 @@ int CRestore::ReadEdictPtr( edict_t **ppEdict, int count, int nBytesAvailable )
 	for ( int i = 0; i < nRead; i++ ) // nRead is never greater than count
 	{
 		pEntity = EntityFromIndex( entityArray[i] );
-		ppEdict[i] = (pEntity) ? pEntity->edict() : NULL;
+		if ( ppEdict[i] == NULL || !pEntity )
+		{
+			continue;
+		}
+		else
+		{
+			ppEdict[i] = (pEntity) ? pEntity->edict() : NULL;
+		}
 	}
 	
 	if ( nRead < count)

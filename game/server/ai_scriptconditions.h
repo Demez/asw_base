@@ -36,6 +36,9 @@ public:
 
 	bool Check( CBaseEntity *pEntity1, CBaseEntity *pEntity2 )
 	{
+		if ( pEntity1 == NULL || pEntity2 == NULL )
+			return false;
+
 		if ( m_distSq != 0 )
 		{
 			float distSq = ( pEntity1->GetAbsOrigin() - pEntity2->GetAbsOrigin() ).LengthSqr();

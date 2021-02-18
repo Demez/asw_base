@@ -71,7 +71,6 @@ private:
 	void			ThreadedInit(); ///< experimental
 	void			RebuildThink();
 	void			SaveNetworkGraph( void) ;	
-	static bool		IsAIFileCurrent( const char *szMapName );		
 	
 	static bool				gm_fNetworksLoaded;							// Have AINetworks been loaded
 	

@@ -892,7 +892,10 @@ void CAI_NetworkManager::InitializeAINetworks()
 	{
 		g_ai_norebuildgraph.SetValue( 0 );
 	}
-	if ( CAI_NetworkManager::IsAIFileCurrent( STRING( gpGlobals->mapname ) ) )
+
+	// useless, it checks if the timestamp of the BSP and AIN files match, if not, it forces regen
+	// and there's already a map version stored in the ain file
+	// if ( CAI_NetworkManager::IsAIFileCurrent( STRING( gpGlobals->mapname ) ) )
 	{
 		pNetwork->LoadNetworkGraph(); 
 		if ( !g_bAIDisabledByUser )
@@ -919,62 +922,6 @@ void CAI_NetworkManager::InitializeAINetworks()
 #ifndef MAX_PATH
 #define MAX_PATH	256
 #endif
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns true if the AINetwork data files are up to date
-//-----------------------------------------------------------------------------
-
-bool CAI_NetworkManager::IsAIFileCurrent ( const char *szMapName )
-{
-	char		szBspFilename[MAX_PATH];
-	char		szGraphFilename[MAX_PATH];
-
-	if ( !g_pGameRules->FAllowNPCs() )
-	{
-		return false;
-	}
-
-	if ( IsX360() && ( filesystem->GetDVDMode() == DVDMODE_STRICT ) )
-	{
-		// dvd build process validates and guarantees correctness, timestamps are allowed to be wrong
-		return true;
-	}
-
-	Q_snprintf( szBspFilename, sizeof( szBspFilename ), "maps/%s%s.bsp" ,szMapName, GetPlatformExt() );
-	Q_snprintf( szGraphFilename, sizeof( szGraphFilename ), "maps/graphs/%s%s.ain", szMapName, GetPlatformExt() );
-	
-	int iCompare;
-	if ( engine->CompareFileTime( szBspFilename, szGraphFilename, &iCompare ) )
-	{
-		if ( iCompare > 0 )
-		{
-			// BSP file is newer.
-			if ( g_ai_norebuildgraph.GetInt() )
-			{
-				// The user has specified that they wish to override the 
-				// rebuilding of outdated nodegraphs (see top of this file)
-				if ( filesystem->FileExists( szGraphFilename ) )
-				{
-					// Display these messages only if the graph exists, and the 
-					// user is asking to override the rebuilding. If the graph does
-					// not exist, we're going to build it whether the user wants to or 
-					// not. 
-					DevMsg( 2, ".AIN File will *NOT* be updated. User Override.\n\n" );
-					DevMsg( "\n*****Node Graph Rebuild OVERRIDDEN by user*****\n\n" );
-				}
-				return true;
-			}
-			else
-			{
-				// Graph is out of date. Rebuild at usual.
-				DevMsg( 2, ".AIN File will be updated\n\n" );
-				return false;
-			}
-		}
-		return true;
-	}
-	return false;
-}
 
 //------------------------------------------------------------------------------
 
@@ -1136,6 +1083,8 @@ void CAI_NetworkManager::ThreadedInit( void )
 
 			// print a "building" message
 			UTIL_CenterPrintAll( "Node Graph out of Date. Rebuilding in background.\n" );
+
+			m_bNeedGraphRebuild = true;
 			SetNextThink( gpGlobals->curtime + 1 );
 			return;
 			break;
@@ -1176,6 +1125,11 @@ void CAI_NetworkManager::ThreadedInit( void )
 			// --------------------------------------------
 			CAI_DynamicLink::InitDynamicLinks();
 			FixupHints();
+
+			if ( !g_bAIDisabledByUser )
+			{
+				CAI_BaseNPC::m_nDebugBits &= ~bits_debugDisableAI;
+			}
 
 			break;
 		default:

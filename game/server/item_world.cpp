@@ -13,6 +13,10 @@
 #include "iservervehicle.h"
 #include "physics_saverestore.h"
 
+#ifdef HL2MP
+#include "hl2mp_gamerules.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -389,6 +393,9 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 		{
 			UTIL_Remove( this );
 
+#ifdef HL2MP
+			HL2MPRules()->RemoveLevelDesignerPlacedObject( this );
+#endif
 		}
 	}
 	else if (gEvilImpulse101)

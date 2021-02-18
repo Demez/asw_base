@@ -905,7 +905,17 @@ void C_BaseAnimating::RemoveBaseAnimatingInterpolatedVars()
 {
 	RemoveVar( m_flEncodedController, false );
 	RemoveVar( m_flPoseParameter, false );
-	RemoveVar( &m_flCycle, false );
+
+#ifdef HL2MP
+	// HACK:  Don't want to remove interpolation for predictables in hl2dm, though
+	// The animation state stuff sets the pose parameters -- so they should interp
+	//  but m_flCycle is not touched, so it's only set during prediction (which occurs on tick boundaries)
+	//  and so needs to continue to be interpolated for smooth rendering of the lower body of the local player in third person, etc.
+	if ( !GetPredictable() )
+#endif
+	{
+		RemoveVar( &m_flCycle, false );
+	}
 }
 
 void C_BaseAnimating::LockStudioHdr()
@@ -1423,6 +1433,7 @@ void C_BaseAnimating::CalcBoneMerge( CStudioHdr *hdr, int boneMask, CBoneBitList
 				m_pBoneMergeCache->Init( this );
 			}
 			m_pBoneMergeCache->MergeMatchingBones( boneMask, boneComputed );
+			// m_pBoneMergeCache->MergeMatchingBones( boneMask );
 		}
 		else
 		{

@@ -61,6 +61,8 @@ PRECACHE_REGISTER_BEGIN( GLOBAL, PrecacheEffectMuzzleFlash )
 	PRECACHE( MATERIAL, "effects/strider_muzzle" )
 PRECACHE_REGISTER_END()
 
+//Whether or not to eject brass from weapons
+ConVar cl_ejectbrass( "cl_ejectbrass", "1" );
 
 ConVar func_break_max_pieces( "func_break_max_pieces", "15", FCVAR_ARCHIVE | FCVAR_REPLICATED );
 
@@ -1624,6 +1626,119 @@ void CTempEnts::Sprite_Smoke( C_LocalTempEntity *pTemp, float scale )
 	pTemp->m_flSpriteScale = scale;
 	pTemp->flags = FTENT_WINDBLOWN;
 
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : pos1 - 
+//			angles - 
+//			type - 
+//-----------------------------------------------------------------------------
+void CTempEnts::EjectBrass( const Vector &pos1, const QAngle &angles, const QAngle &gunAngles, int type )
+{
+	if ( cl_ejectbrass.GetBool() == false )
+		return;
+
+	const model_t *pModel = m_pShells[type];
+
+	if ( pModel == NULL )
+		return;
+
+	C_LocalTempEntity	*pTemp = TempEntAlloc( pos1, ( model_t * ) pModel );
+
+	if ( pTemp == NULL )
+		return;
+
+	//Keep track of shell type
+	if ( type == 2 )
+	{
+		pTemp->hitSound = BOUNCE_SHOTSHELL;
+	}
+	else
+	{
+		pTemp->hitSound = BOUNCE_SHELL;
+	}
+
+	pTemp->SetBody( 0 );
+
+	pTemp->flags |= ( FTENT_COLLIDEWORLD | FTENT_FADEOUT | FTENT_GRAVITY | FTENT_ROTATE );
+
+	pTemp->m_vecTempEntAngVelocity[0] = random->RandomFloat(-1024,1024);
+	pTemp->m_vecTempEntAngVelocity[1] = random->RandomFloat(-1024,1024);
+	pTemp->m_vecTempEntAngVelocity[2] = random->RandomFloat(-1024,1024);
+
+	//Face forward
+	pTemp->SetAbsAngles( gunAngles );
+
+	pTemp->SetRenderMode( kRenderNormal );
+	pTemp->tempent_renderamt = 255;		// Set this for fadeout
+
+	Vector	dir;
+
+	AngleVectors( angles, &dir );
+
+	dir *= random->RandomFloat( 150.0f, 200.0f );
+
+	pTemp->SetVelocity( Vector(dir[0] + random->RandomFloat(-64,64),
+							   dir[1] + random->RandomFloat(-64,64),
+							   dir[2] + random->RandomFloat(  0,64) ) );
+
+	pTemp->die = gpGlobals->curtime + 1.0f + random->RandomFloat( 0.0f, 1.0f );	// Add an extra 0-1 secs of life	
+}
+
+
+void CTempEnts::HL1EjectBrass( const Vector &vecPosition, const QAngle &angAngles, const Vector &vecVelocity, int nType )
+{
+	const model_t *pModel = NULL;
+
+#if defined( HL1_CLIENT_DLL )
+	switch ( nType )
+	{
+	case 0:
+	default:
+		pModel = m_pHL1Shell;
+		break;
+	case 1:
+		pModel = m_pHL1ShotgunShell;
+		break;
+	}
+#endif
+	if ( pModel == NULL )
+		return;
+
+	C_LocalTempEntity	*pTemp = TempEntAlloc( vecPosition, ( model_t * ) pModel );
+
+	if ( pTemp == NULL )
+		return;
+
+	switch ( nType )
+	{
+	case 0:
+	default:
+		pTemp->hitSound = BOUNCE_SHELL;
+		break;
+	case 1:
+		pTemp->hitSound = BOUNCE_SHOTSHELL;
+		break;
+	}
+
+	pTemp->SetBody( 0 );
+	pTemp->flags |= ( FTENT_COLLIDEWORLD | FTENT_FADEOUT | FTENT_GRAVITY | FTENT_ROTATE );
+
+	pTemp->m_vecTempEntAngVelocity[0] = random->RandomFloat( -512,511 );
+	pTemp->m_vecTempEntAngVelocity[1] = random->RandomFloat( -256,255 );
+	pTemp->m_vecTempEntAngVelocity[2] = random->RandomFloat( -256,255 );
+
+	//Face forward
+	pTemp->SetAbsAngles( angAngles );
+
+	pTemp->SetRenderMode( kRenderNormal );
+	pTemp->tempent_renderamt	= 255;		// Set this for fadeout
+
+	pTemp->SetVelocity( vecVelocity );
+
+	pTemp->die = gpGlobals->curtime + 2.5;
 }
 
 

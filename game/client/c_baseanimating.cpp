@@ -73,7 +73,7 @@ ConVar r_jiggle_bones( "r_jiggle_bones", "1" );
 ConVar RagdollImpactStrength( "z_ragdoll_impact_strength", "500" );
 ConVar cl_disable_ragdolls( "cl_disable_ragdolls", "0", FCVAR_CHEAT );
 
-ConVar cl_ejectbrass( "cl_ejectbrass", "1" );
+extern ConVar cl_ejectbrass;
 
 
 // If an NPC is moving faster than this, he should play the running footstep sound
@@ -4183,7 +4183,16 @@ void C_BaseAnimating::FireEvent( const Vector& origin, const QAngle& angles, int
 	case CL_EVENT_EJECTBRASS1:
 		if ( m_Attachments.Count() > 0 )
 		{
-			DevWarning( "Unhandled eject brass animevent\n" );
+			if ( MainViewOrigin(GET_ACTIVE_SPLITSCREEN_SLOT()).DistToSqr( GetAbsOrigin() ) < (256 * 256) )
+			{
+				Vector attachOrigin;
+				QAngle attachAngles; 
+
+				if( GetAttachment( 2, attachOrigin, attachAngles ) )
+				{
+					tempents->EjectBrass( attachOrigin, attachAngles, GetAbsAngles(), atoi( options ) );
+				}
+			}
 		}
 		break;
 

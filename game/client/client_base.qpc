@@ -549,7 +549,7 @@ files
 			"$SRC_DIR/game/client/smoke_fog_overlay.cpp"
 		}
 
-		folder "game_controls"
+		/*folder "game_controls"
 		{
 			"$SRC_DIR/game/client/game_controls/baseviewport.cpp"
 			"$SRC_DIR/game/client/game_controls/basemodel_panel.cpp"
@@ -563,7 +563,7 @@ files
 			"$SRC_DIR/game/client/game_controls/teammenu.cpp"
 			"$SRC_DIR/game/client/game_controls/vguitextwindow.cpp"
 			"$SRC_DIR/game/client/game_controls/IconPanel.cpp"
-		}
+		}*/
 	}
 
 	folder "MP3"

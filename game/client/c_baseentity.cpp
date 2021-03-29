@@ -42,6 +42,7 @@
 #include "clientalphaproperty.h"
 #include "cellcoord.h"
 #include "gamestringpool.h"
+#include "c_physicsprop.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -78,7 +79,9 @@ void cc_cl_interp_all_changed( IConVar *pConVar, const char *pOldString, float f
 
 static ConVar  report_cliententitysim( "report_cliententitysim", "0", FCVAR_CHEAT, "List all clientside simulations and time - will report and turn itself off." );
 static ConVar  cl_extrapolate( "cl_extrapolate", "1", FCVAR_CHEAT, "Enable/disable extrapolation if interpolation history runs out." );
-static ConVar  cl_interp_npcs( "cl_interp_npcs", "0.0", 0, "Interpolate NPC positions starting this many seconds in past (or cl_interp, if greater)" );  
+static ConVar  cl_interp_npcs( "cl_interp_npcs", "0.1", 0, "Interpolate NPC positions starting this many seconds in past (or cl_interp, if greater)" );  
+static ConVar  cl_interp_phys_props( "cl_interp_phys_props", "0.01", 0, "Interpolate physics prop positions starting this many seconds in past (or cl_interp, if greater)" );  
+static ConVar  cl_interp_vehicles( "cl_interp_vehicles", "0.01", 0, "Interpolate vehicle positions starting this many seconds in past (or cl_interp, if greater)" );  
 static ConVar  cl_interp_all( "cl_interp_all", "0", 0, "Disable interpolation list optimizations.", 0, 0, 0, 0, cc_cl_interp_all_changed );
 ConVar  r_drawmodeldecals( "r_drawmodeldecals", "1" );
 extern ConVar	cl_showerror;
@@ -3470,7 +3473,7 @@ void C_BaseEntity::ClientThink()
 }
 
 // Defined in engine
-static ConVar cl_interpolate( "cl_interpolate", "1.0f", FCVAR_USERINFO | FCVAR_DEVELOPMENTONLY );
+static ConVar cl_interpolate( "cl_interpolate", "1.0f", FCVAR_USERINFO );
 // (static function)
 void C_BaseEntity::InterpolateServerEntities()
 {
@@ -5660,6 +5663,9 @@ void C_BaseEntity::ResetLatched()
 
 static float AdjustInterpolationAmount( C_BaseEntity *pEntity, float baseInterpolation )
 {
+	if ( pEntity == NULL )
+		return baseInterpolation;
+
 	if ( cl_interp_npcs.GetFloat() > 0 )
 	{
 		const float minNPCInterpolationTime = cl_interp_npcs.GetFloat();
@@ -5667,15 +5673,44 @@ static float AdjustInterpolationAmount( C_BaseEntity *pEntity, float baseInterpo
 
 		if ( minNPCInterpolation > baseInterpolation )
 		{
-			while ( pEntity )
+			C_BaseEntity *pTmpEntity = pEntity;
+			while ( pTmpEntity )
 			{
-				if ( pEntity->IsNPC() )
+				if ( pTmpEntity->IsNPC() )
 					return minNPCInterpolation;
 
-				pEntity = pEntity->GetMoveParent();
+				pTmpEntity = pTmpEntity->GetMoveParent();
 			}
 		}
 	}
+	
+	if ( cl_interp_phys_props.GetFloat() > 0 )
+	{
+		const float minPhysInterpolationTime = cl_interp_phys_props.GetFloat();
+		const float minPhysInterpolation = TICK_INTERVAL * ( TIME_TO_TICKS( minPhysInterpolationTime ) + 1 );
+
+		// if ( minPhysInterpolation > baseInterpolation )
+		{
+			C_PhysicsProp *pPhysProp = dynamic_cast<C_PhysicsProp *>(pEntity);
+
+			if ( pPhysProp )
+				return minPhysInterpolation;
+		}
+	}
+	
+	/*if ( cl_interp_vehicles.GetFloat() > 0 )
+	{
+		const float minVehicleInterpolationTime = cl_interp_vehicles.GetFloat();
+		const float minVehicleInterpolation = TICK_INTERVAL * ( TIME_TO_TICKS( minVehicleInterpolationTime ) + 1 );
+
+		// if ( minPhysInterpolation > baseInterpolation )
+		{
+			C_PhysicsProp *pVehicle = dynamic_cast<C_PhysicsProp *>(pEntity);
+
+			if ( pVehicle )
+				return minVehicleInterpolation;
+		}
+	}*/
 
 	return baseInterpolation;
 }

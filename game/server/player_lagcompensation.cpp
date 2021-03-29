@@ -48,7 +48,7 @@ ILagCompensationManager *lagcompensation = &g_LagCompensationManager;
 // If it can't get there, leave the player where he is.
 // 
 
-ConVar sv_unlag_debug( "sv_unlag_debug", "0", FCVAR_GAMEDLL | FCVAR_DEVELOPMENTONLY );
+ConVar sv_unlag_debug( "sv_unlag_debug", "0", FCVAR_GAMEDLL );
 
 float g_flFractionScale = 0.95;
 

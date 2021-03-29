@@ -72,8 +72,8 @@ bool UsingMouselook( int nSlot )
 	return s_MouseLook.GetBool( nSlot );
 }
 
-ConVar in_forceuser( "in_forceuser", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Force user input to this split screen player." );
-static ConVar ss_mimic( "ss_mimic", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Split screen users mimic base player's CUserCmds" );
+ConVar in_forceuser( "in_forceuser", "0", FCVAR_CHEAT, "Force user input to this split screen player." );
+static ConVar ss_mimic( "ss_mimic", "0", FCVAR_CHEAT, "Split screen users mimic base player's CUserCmds" );
 
 static void SplitScreenTeleport( int nSlot )
 {
@@ -97,7 +97,7 @@ static void SplitScreenTeleport( int nSlot )
 	}
 }
 
-CON_COMMAND_F( ss_teleport, "Teleport other splitscreen player to my location.", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY )
+CON_COMMAND_F( ss_teleport, "Teleport other splitscreen player to my location.", FCVAR_CHEAT )
 {
 	SplitScreenTeleport( GET_ACTIVE_SPLITSCREEN_SLOT() );
 }
@@ -1547,7 +1547,7 @@ static void CalcButtonBits( int nSlot, int& bits, int in_button, int in_ignore, 
 	{
 		if ( demez_cl_auto_bhop.GetBool() && in_button == IN_JUMP )
 		{
-			if ( C_BasePlayer::GetLocalPlayer() && C_BasePlayer::GetLocalPlayer()->GetGroundEntity() != NULL )
+			if ( C_BasePlayer::GetLocalPlayer() && C_BasePlayer::GetLocalPlayer()->GetGroundEntity() )
 			{
 				bits |= in_button;
 			}

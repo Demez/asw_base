@@ -141,15 +141,15 @@ void CTeamplayRoundBasedRulesProxy::InputSetStalemateOnTimelimit( inputdata_t &i
 }
 #endif
 
-ConVar mp_capstyle( "mp_capstyle", "1", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "Sets the style of capture points used. 0 = Fixed players required to cap. 1 = More players cap faster, but longer cap times." );
-ConVar mp_blockstyle( "mp_blockstyle", "1", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "Sets the style of capture point blocking used. 0 = Blocks break captures completely. 1 = Blocks only pause captures." );
+ConVar mp_capstyle( "mp_capstyle", "1", FCVAR_REPLICATED, "Sets the style of capture points used. 0 = Fixed players required to cap. 1 = More players cap faster, but longer cap times." );
+ConVar mp_blockstyle( "mp_blockstyle", "1", FCVAR_REPLICATED, "Sets the style of capture point blocking used. 0 = Blocks break captures completely. 1 = Blocks only pause captures." );
 ConVar mp_respawnwavetime( "mp_respawnwavetime", "10.0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Time between respawn waves." );
-ConVar mp_capdeteriorate_time( "mp_capdeteriorate_time", "90.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "Time it takes for a full capture point to deteriorate." );
+ConVar mp_capdeteriorate_time( "mp_capdeteriorate_time", "90.0", FCVAR_REPLICATED, "Time it takes for a full capture point to deteriorate." );
 ConVar mp_tournament ( "mp_tournament", "0", FCVAR_REPLICATED | FCVAR_NOTIFY );
 
 //Arena Mode
 ConVar tf_arena_preround_time( "tf_arena_preround_time", "10", FCVAR_NOTIFY | FCVAR_REPLICATED, "Length of the Pre-Round time", true, 5.0, true, 15.0 );
-ConVar tf_arena_round_time( "tf_arena_round_time", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar tf_arena_round_time( "tf_arena_round_time", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_arena_max_streak( "tf_arena_max_streak", "5", FCVAR_NOTIFY | FCVAR_REPLICATED, "Teams will be scrambled if one team reaches this streak" );
 
 ConVar mp_teams_unbalance_limit( "mp_teams_unbalance_limit", "1", FCVAR_REPLICATED | FCVAR_NOTIFY,
@@ -164,9 +164,9 @@ ConVar mp_disable_respawn_times( "mp_disable_respawn_times", "0", FCVAR_NOTIFY |
 ConVar mp_bonusroundtime( "mp_bonusroundtime", "15", FCVAR_REPLICATED, "Time after round win until round restarts", true, 5, true, 15 );
 
 #ifdef GAME_DLL
-ConVar mp_showroundtransitions( "mp_showroundtransitions", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Show gamestate round transitions." );
+ConVar mp_showroundtransitions( "mp_showroundtransitions", "0", FCVAR_CHEAT, "Show gamestate round transitions." );
 ConVar mp_enableroundwaittime( "mp_enableroundwaittime", "1", FCVAR_REPLICATED, "Enable timers to wait between rounds." );
-ConVar mp_showcleanedupents( "mp_showcleanedupents", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Show entities that are removed on round respawn." );
+ConVar mp_showcleanedupents( "mp_showcleanedupents", "0", FCVAR_CHEAT, "Show entities that are removed on round respawn." );
 ConVar mp_restartround( "mp_restartround", "0", FCVAR_GAMEDLL, "If non-zero, the current round will restart in the specified number of seconds" );	
 
 ConVar mp_stalemate_timelimit( "mp_stalemate_timelimit", "240", FCVAR_REPLICATED, "Timelimit (in seconds) of the stalemate round." );

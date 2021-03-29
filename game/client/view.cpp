@@ -889,7 +889,7 @@ void CViewRender::SetUpOverView()
 // Purpose: Render current view into specified rectangle
 // Input  : *rect - 
 //-----------------------------------------------------------------------------
-ConVar ss_debug_draw_player( "ss_debug_draw_player", "-1", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar ss_debug_draw_player( "ss_debug_draw_player", "-1", FCVAR_CHEAT );
 void CViewRender::Render( vrect_t *rect )
 {
 	VPROF_BUDGET( "CViewRender::Render", "CViewRender::Render" );

@@ -1804,7 +1804,7 @@ void RespawnEntities()
 	g_EntityListSystem.m_bRespawnAllEntities = true;
 }
 
-static ConCommand restart_entities( "respawn_entities", RespawnEntities, "Respawn all the entities in the map.", FCVAR_CHEAT | FCVAR_SPONLY );
+static ConCommand restart_entities( "respawn_entities", RespawnEntities, "Respawn all the entities in the map.", FCVAR_CHEAT /*| FCVAR_SPONLY*/ );
 
 class CSortedEntityList
 {

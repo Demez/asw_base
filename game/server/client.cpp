@@ -98,6 +98,7 @@ void Host_Say( edict_t *pEdict, const CCommand &args, bool teamonly )
 	char    szTemp[256];
 	const char *cpSay = "say";
 	const char *cpSayTeam = "say_team";
+
 	const char *pcmd = args[0];
 	bool bSenderDead = false;
 
@@ -390,7 +391,7 @@ void ClientPrecache( void )
 	engine->ForceExactFile( "scripts/mod_lessons.txt" );
 
 	// weapon scripts
-	engine->ForceExactFile( "scripts/asw_weapon_ammo_bag.txt" );
+	/*engine->ForceExactFile( "scripts/asw_weapon_ammo_bag.txt" );
 	engine->ForceExactFile( "scripts/asw_weapon_ammo_satchel.txt" );
 	engine->ForceExactFile( "scripts/asw_weapon_autogun.txt" );
 	engine->ForceExactFile( "scripts/asw_weapon_blink.txt" );
@@ -433,7 +434,22 @@ void ClientPrecache( void )
 	engine->ForceExactFile( "scripts/asw_weapon_tesla_gun.txt" );
 	engine->ForceExactFile( "scripts/asw_weapon_tesla_trap.txt" );
 	engine->ForceExactFile( "scripts/asw_weapon_vindicator.txt" );
-	engine->ForceExactFile( "scripts/asw_weapon_welder.txt" );
+	engine->ForceExactFile( "scripts/asw_weapon_welder.txt" );*/
+
+	//HL2 weapon script [str]
+	engine->ForceExactFile( "scripts/weapon_357.txt" );
+	//engine->ForceExactFile( "scripts/weapon_alyxgun.txt" ); / i dont really know, does it should be execed [str]
+	//engine->ForceExactFile( "scripts/weapon_annabelle.txt" ); // i dont really know, does it should be execed [str]
+	engine->ForceExactFile( "scripts/weapon_ar2.txt" );
+	engine->ForceExactFile( "scripts/weapon_bugbait.txt" );
+	engine->ForceExactFile( "scripts/weapon_crossbow.txt" );
+	engine->ForceExactFile( "scripts/weapon_crowbar.txt" );
+	engine->ForceExactFile( "scripts/weapon_physcannon.txt" );
+	engine->ForceExactFile( "scripts/weapon_pistol.txt" );
+	engine->ForceExactFile( "scripts/weapon_rpg.txt" );
+	engine->ForceExactFile( "scripts/weapon_shotgun.txt" );
+	engine->ForceExactFile( "scripts/weapon_smg1.txt" );
+	//engine->ForceExactFile( "scripts/weapon_stunstick.txt" ); / i dont really know, does it should be execed [str]
 }
 
 CON_COMMAND_F( cast_ray, "Tests collision detection", FCVAR_CHEAT )

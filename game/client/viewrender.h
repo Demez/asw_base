@@ -534,8 +534,8 @@ protected:
 
 	CMaterialReference	m_WhiteMaterial;
 
-	CON_COMMAND_MEMBER_F( CViewRender, "screenfademinsize", OnScreenFadeMinSize, "Modify global screen fade min size in pixels", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-	CON_COMMAND_MEMBER_F( CViewRender, "screenfademaxsize", OnScreenFadeMaxSize, "Modify global screen fade max size in pixels", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+	CON_COMMAND_MEMBER_F( CViewRender, "screenfademinsize", OnScreenFadeMinSize, "Modify global screen fade min size in pixels", FCVAR_CHEAT );
+	CON_COMMAND_MEMBER_F( CViewRender, "screenfademaxsize", OnScreenFadeMaxSize, "Modify global screen fade max size in pixels", FCVAR_CHEAT );
 };
 
 #endif // VIEWRENDER_H

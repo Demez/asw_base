@@ -226,7 +226,7 @@ void CBaseMultiplayerPlayer::AwardAchievement( int iAchievement )
 			Msg( "%s\n", szBuf );
 		}
 	}
-	ConCommand dump_achievement_counters( "dump_achievement_counters", DumpAchievementCounters, "Spew the per-life achievement counters for multiplayer players", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+	ConCommand dump_achievement_counters( "dump_achievement_counters", DumpAchievementCounters, "Spew the per-life achievement counters for multiplayer players", FCVAR_CHEAT );
 
 #endif // _DEBUG
 

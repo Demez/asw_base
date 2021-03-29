@@ -145,7 +145,8 @@ void CFPSPanel::ComputeSize( void )
 		y += XBOX_MINBORDERSAFE * tall;
 	}
 	SetPos( x, y );
-	SetSize( FPS_PANEL_WIDTH, ( m_nLinesNeeded + 2 ) * vgui::surface()->GetFontTall( m_hFont ) + 4 );
+	// SetSize( FPS_PANEL_WIDTH, ( m_nLinesNeeded + 2 ) * vgui::surface()->GetFontTall( m_hFont ) + 4 );
+	SetSize( FPS_PANEL_WIDTH, ( m_nLinesNeeded + 2 ) * vgui::surface()->GetFontTall( m_hFont ) + 64 );
 }
 
 void CFPSPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
@@ -439,6 +440,9 @@ void CFPSPanel::Paint()
 	int nShowPosMode = cl_showpos.GetInt();
 	if ( nShowPosMode > 0 )
 	{
+		// int baseY = 2;
+		int baseY = 64;
+
 		FOR_EACH_VALID_SPLITSCREEN_PLAYER( hh )
 		{
 			Vector vecOrigin = MainViewOrigin(hh);
@@ -462,25 +466,25 @@ void CFPSPanel::Paint()
 
 			i++;
 
-			g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2 + i * lineHeight, 
+			g_pMatSystemSurface->DrawColoredText( m_hFont, x, baseY + i * lineHeight, 
 													255, 255, 255, 255, 
 													"name: %s", szName );
 
 			i++;
 
-			g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2+ i * lineHeight, 
+			g_pMatSystemSurface->DrawColoredText( m_hFont, x, baseY + i * lineHeight, 
 												  255, 255, 255, 255, 
 												  "pos:  %.02f %.02f %.02f", 
 												  vecOrigin.x, vecOrigin.y, vecOrigin.z );
 			i++;
 
-			g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2 + i * lineHeight, 
+			g_pMatSystemSurface->DrawColoredText( m_hFont, x, baseY + i * lineHeight, 
 												  255, 255, 255, 255, 
 												  "ang:  %.02f %.02f %.02f", 
 												  angles.x, angles.y, angles.z );
 			i++;
 
-			g_pMatSystemSurface->DrawColoredText( m_hFont, x, 2 + i * lineHeight, 
+			g_pMatSystemSurface->DrawColoredText( m_hFont, x, baseY + i * lineHeight, 
 												  255, 255, 255, 255, 
 												  "vel:  %.2f", 
 												  vel.Length() );

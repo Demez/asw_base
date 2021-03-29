@@ -2231,6 +2231,10 @@ void CAI_BaseNPC::StartTask( const Task_t *pTask )
 		{
 			CBaseEntity *pPlayer = gEntList.FindEntityByName( NULL, "!player" );
 
+			// Demez: FIXME NOW
+			if ( !pPlayer )
+				break;
+
 			AI_NavGoal_t goal;
 
 			goal.type = GOALTYPE_LOCATION;

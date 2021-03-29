@@ -205,6 +205,9 @@ CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
 
 CBasePlayer* UTIL_GetLocalPlayer( void );
 
+//-----------------------------------------------------------------------------
+// Demez UTIL
+
 // multiplayer use
 CBasePlayer* UTIL_GetNearestPlayer( const Vector& origin );
 // would MASK_BLOCKLOS_AND_NPCS be better here?
@@ -231,7 +234,9 @@ bool UTIL_IsIlluminatedByFlashlight( CBaseEntity *pEntity, float *flReturnDot );
 #define UTIL_GETNEXTPLAYER( i ) \
 	CBasePlayer *pPlayer = UTIL_PlayerByIndex( i ); \
 	if ( !pPlayer ) \
-		continue
+		continue;
+
+//-----------------------------------------------------------------------------
 
 // get the local player on a listen server
 CBasePlayer *UTIL_GetListenServerHost( void );

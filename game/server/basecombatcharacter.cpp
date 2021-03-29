@@ -2733,7 +2733,7 @@ CBaseEntity *CBaseCombatCharacter::Weapon_FindUsable( const Vector &range )
 		// Unarmed citizens are conservative in their weapon finding
 		if ( Classify() != CLASS_PLAYER_ALLY_VITAL )
 		{
-			bConservative = true;
+			// bConservative = true;
 		}
 	}
 #endif

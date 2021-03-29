@@ -6709,6 +6709,12 @@ void CAI_BaseNPC::SetupVPhysicsHull()
 	IPhysicsObject *pPhysObj = VPhysicsGetObject();
 	if ( pPhysObj )
 	{
+		CStudioHdr *modelPtr = GetModelPtr();
+		if ( !modelPtr )
+		{
+			return;
+		}
+
 		float mass = Studio_GetMass(GetModelPtr());
 		if ( mass > 0 )
 		{

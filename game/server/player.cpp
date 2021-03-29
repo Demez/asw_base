@@ -7754,6 +7754,10 @@ void CRevertSaved::InputReload( inputdata_t &inputdata )
 			g_ServerGameDLL.m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
 		}
 	}
+	else if ( g_pGameRules->IsCoOp() && V_strcmp(gpGlobals->mapname.ToCStr(), "d2_coast_08") != 0)  // Demez: HACK
+	{
+		engine->ServerCommand("mp_restartgame 5\n");
+	}
 }
 
 void CRevertSaved::LoadThink( void )

@@ -98,7 +98,7 @@ int g_nInsideDispatchUpdateTransmitState = 0;
 // When this is false, throw an assert in debug when GetAbsAnything is called. Used when hierachy is incomplete/invalid.
 bool CBaseEntity::s_bAbsQueriesValid = true;
 
-ConVar sv_netvisdist( "sv_netvisdist", "10000", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Test networking visibility distance" );
+ConVar sv_netvisdist( "sv_netvisdist", "10000", FCVAR_CHEAT, "Test networking visibility distance" );
 ConVar ent_show_contexts( "ent_show_contexts", "0", 0, "Show entity contexts in ent_text display" );
 
 ConVar sv_script_think_interval("sv_script_think_interval", "0.1");
@@ -259,7 +259,7 @@ struct SOriginDebugFP
 
 static SOriginDebugFP sOriginDebugFP;
 
-ConVar sv_lognetorigindeltas( "sv_lognetorigindeltas", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Log entity origins" );
+ConVar sv_lognetorigindeltas( "sv_lognetorigindeltas", "0", FCVAR_CHEAT, "Log entity origins" );
 
 static void LogNetOriginDeltas( CBaseEntity *entity, Vector const *v )
 {
@@ -1722,6 +1722,7 @@ CBaseEntityOutput *CBaseEntity::FindNamedOutput( const char *pszOutput )
 		}
 		dmap = dmap->baseMap;
 	}
+
 	return NULL;
 }
 
@@ -2392,6 +2393,27 @@ BEGIN_ENT_SCRIPTDESC_ROOT( CBaseEntity, "Root class of all server-side entities"
 	DEFINE_SCRIPTFUNC_NAMED( ConnectOutputToScript, "ConnectOutput", "Adds an I/O connection that will call the named function when the specified output fires"  )
 	DEFINE_SCRIPTFUNC_NAMED( DisconnectOutputFromScript, "DisconnectOutput", "Removes a connected script function from an I/O event."  )
 	
+	DEFINE_SCRIPTFUNC( IsPlayer, "" )
+
+	DEFINE_SCRIPTFUNC_NAMED( ScriptIsPrecacheAllowed, "IsPrecacheAllowed", "" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetAllowPrecache, "SetAllowPrecache", "" )
+
+	DEFINE_SCRIPTFUNC_NAMED( ScriptPrecacheModel, "PrecacheModel", "" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptPrecacheSound, "PrecacheSound", "" )
+
+	DEFINE_SCRIPTFUNC_NAMED( ScriptKeyValue, "KeyValue", "" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptKeyValueInt, "KeyValueInt", "" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptKeyValueFloat, "KeyValueFloat", "" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptKeyValueVec, "KeyValueVec", "" )
+
+	DEFINE_SCRIPTFUNC_NAMED( ScriptAddOutput, "AddOutput", "" )
+
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetName, "SetName", ""  )
+
+	DEFINE_SCRIPTFUNC_NAMED( ScriptFindAndSetParent, "FindAndSetParent", ""  )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetParent, "SetParent", ""  )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetParentAttachment, "SetParentAttachment", "" )
+
 	DEFINE_SCRIPTFUNC( GetHealth, "" )
 	DEFINE_SCRIPTFUNC( SetHealth, "" )
 	DEFINE_SCRIPTFUNC( GetMaxHealth, "" )
@@ -2458,6 +2480,7 @@ BEGIN_ENT_SCRIPTDESC_ROOT( CBaseEntity, "Root class of all server-side entities"
 	DEFINE_SCRIPTFUNC_NAMED( GetScriptOwnerEntity, "GetOwner", "Gets this entity's owner" )
 	DEFINE_SCRIPTFUNC_NAMED( SetScriptOwnerEntity, "SetOwner", "Sets this entity's owner" )
 	DEFINE_SCRIPTFUNC( entindex, "" )
+
 END_SCRIPTDESC();
 
 
@@ -5505,7 +5528,7 @@ int CBaseEntity::PrecacheModel( const char *name )
 //-----------------------------------------------------------------------------
 void CBaseEntity::Remove( )
 {
-	UTIL_Remove( this );
+	UTIL_Remove( NetworkProp() );
 }
 
 //-----------------------------------------------------------------------------
@@ -5548,6 +5571,91 @@ HSCRIPT CBaseEntity::ScriptGetModelKeyValues( void )
 
 	return hScript;
 }
+
+
+bool CBaseEntity::ScriptIsPrecacheAllowed()
+{
+	return IsPrecacheAllowed();
+}
+
+void CBaseEntity::ScriptSetAllowPrecache( bool allow )
+{
+	return SetAllowPrecache( allow );
+}
+
+
+int CBaseEntity::ScriptPrecacheModel( const char* name )
+{
+	return PrecacheModel( name );
+}
+
+bool CBaseEntity::ScriptPrecacheSound( const char* name )
+{
+	return PrecacheSound( name );
+}
+
+
+void CBaseEntity::ScriptKeyValue( const char* key, const char* value )
+{
+	KeyValue( key, value );
+}
+
+void CBaseEntity::ScriptKeyValueInt( const char* key, int value )
+{
+	KeyValue( key, value );
+}
+
+void CBaseEntity::ScriptKeyValueFloat( const char* key, float value )
+{
+	KeyValue( key, value );
+}
+
+void CBaseEntity::ScriptKeyValueVec( const char* key, const Vector& value )
+{
+	KeyValue( key, value );
+}
+
+
+void CBaseEntity::ScriptAddOutput( const char* output, const char* value )
+{
+	CBaseEntityOutput *pOutput = FindNamedOutput( output );
+	if ( pOutput )
+	{
+		pOutput->ParseEventAction( value );
+	}
+}
+
+
+void CBaseEntity::ScriptSetName( const char* value )
+{
+	SetName( MAKE_STRING(value) );
+}
+
+
+void CBaseEntity::ScriptFindAndSetParent( const char* parent, int iAttachment )
+{
+	CBaseEntity *pParent = gEntList.FindEntityByName( NULL, parent, NULL, this );
+	
+	if ( pParent )
+	{
+		SetParent( pParent, iAttachment );
+	}
+	else
+	{
+		Msg( "Entity %s does not exist\n", parent );
+	}
+}
+
+void CBaseEntity::ScriptSetParent( HSCRIPT pParentEntity, int iAttachment )
+{
+	SetParent( ToEnt(pParentEntity), iAttachment );
+}
+
+void CBaseEntity::ScriptSetParentAttachment( const char* parent, const char* szAttachment, bool bMaintainOffset )
+{
+	SetParentAttachment( parent, szAttachment, bMaintainOffset );
+}
+
 
 
 //   Entity degugging console commands
@@ -5659,15 +5767,24 @@ void CC_Ent_ViewOffset( const CCommand& args )
 }
 static ConCommand ent_viewoffset("ent_viewoffset", CC_Ent_ViewOffset, "Displays the eye position for the given entity(ies) in red.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
 
+
+#define CLIENT_MSG( pPlayer, ... ) \
+	if ( pPlayer ) \
+		ClientPrint( pPlayer, HUD_PRINTCONSOLE, UTIL_VarArgs( __VA_ARGS__ ) ); \
+	else \
+		Msg( __VA_ARGS__ )
+
+
 //------------------------------------------------------------------------------
 void CC_Ent_Remove( const CCommand& args )
 {
 	CBaseEntity *pEntity = NULL;
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
 
 	// If no name was given set bits based on the picked
 	if ( FStrEq( args[1],"") ) 
 	{
-		pEntity = UTIL_GetCommandClient() ? UTIL_GetCommandClient()->FindPickerEntity() : NULL;
+		pEntity = pPlayer ? pPlayer->FindPickerEntity() : NULL;
 	}
 	else 
 	{
@@ -5696,7 +5813,13 @@ void CC_Ent_Remove( const CCommand& args )
 	// Found one?
 	if ( pEntity )
 	{
-		Msg( "Removed %s(%s)\n", STRING(pEntity->m_iClassname), pEntity->GetDebugName() );
+		// Don't remove players
+		if ( pEntity->IsPlayer() )
+			return;
+
+		// Msg( "Removed %s(%s)\n", STRING(pEntity->m_iClassname), pEntity->GetDebugName() );
+		CLIENT_MSG( pPlayer, "Removed %s(%s)\n", STRING(pEntity->m_iClassname), pEntity->GetDebugName() );
+
 		UTIL_Remove( pEntity );
 	}
 }
@@ -5721,6 +5844,9 @@ void CC_Ent_RemoveAll( const CCommand& args )
 				  (ent->m_iClassname != NULL_STRING	&& FStrEq(args[1], STRING(ent->m_iClassname))) ||
 				  (ent->GetClassname()!=NULL && FStrEq(args[1], ent->GetClassname())))
 			{
+				if ( ent->IsPlayer() )
+					continue;
+
 				UTIL_Remove( ent );
 				iCount++;
 			}
@@ -5952,6 +6078,7 @@ static bool UtlStringLessFunc( const CUtlString &lhs, const CUtlString &rhs )
 	return Q_stricmp( lhs.String(), rhs.String() ) < 0;
 }
 
+#if !DEMEZ_HL2
 class CEntFireAutoCompletionFunctor : public ICommandCallback, public ICommandCompletionCallback
 {
 public:
@@ -6173,6 +6300,7 @@ private:
 
 static CEntFireAutoCompletionFunctor g_EntFireAutoComplete;
 static ConCommand ent_fire("ent_fire", &g_EntFireAutoComplete, "Usage:\n   ent_fire <target> [action] [value] [delay]\n", FCVAR_CHEAT, &g_EntFireAutoComplete );
+#endif
 
 void CC_Ent_CancelPendingEntFires( const CCommand& args )
 {

@@ -1834,7 +1834,7 @@ public:
 	const char *GetScriptId();
 	HSCRIPT GetScriptScope();
 	void RunPrecacheScripts( void );
-	void RunOnPostSpawnScripts( void );
+	virtual void RunOnPostSpawnScripts( void );
 
 	HSCRIPT ScriptGetMoveParent( void );
 	HSCRIPT ScriptGetRootMoveParent();
@@ -1853,6 +1853,26 @@ public:
 	const Vector &ScriptGetForward( void ) { static Vector vecForward; GetVectors( &vecForward, NULL, NULL ); return vecForward; }
 	const Vector &ScriptGetLeft( void ) { static Vector vecLeft; GetVectors( NULL, &vecLeft, NULL ); return vecLeft; }
 	const Vector &ScriptGetUp( void ) { static Vector vecUp; GetVectors( NULL, NULL, &vecUp ); return vecUp; }
+
+	bool ScriptIsPrecacheAllowed();
+	void ScriptSetAllowPrecache( bool allow );
+
+	int ScriptPrecacheModel( const char *name ); 
+	bool ScriptPrecacheSound( const char *name );
+
+	// useless?
+	void ScriptKeyValue( const char* key, const char* value );
+	void ScriptKeyValueInt( const char* key, int value );
+	void ScriptKeyValueFloat( const char* key, float value );
+	void ScriptKeyValueVec( const char* key, const Vector& value );
+
+	void ScriptAddOutput( const char* output, const char* value );
+
+	void ScriptSetName( const char* value );
+
+	void ScriptFindAndSetParent( const char* parent, int iAttachment );
+	void ScriptSetParent( HSCRIPT pParentEntity, int iAttachment );
+	void ScriptSetParentAttachment( const char* parent, const char* szAttachment, bool bMaintainOffset );
 
 	HSCRIPT ScriptGetModelKeyValues( void );
 

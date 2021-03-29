@@ -78,6 +78,17 @@ public:
 	C_BasePlayer();
 	virtual			~C_BasePlayer();
 
+	// hmm
+	virtual QAngle GetAimPunchAngle()
+	{
+		return m_Local.m_vecPunchAngle;
+	}
+
+	virtual QAngle GetAimPunchAngleVel()
+	{
+		return m_Local.m_vecPunchAngleVel;
+	}
+
 	virtual void	Spawn( void );
 	virtual void	SharedSpawn(); // Shared between client and server.
 	Class_T		Classify( void ) { return CLASS_PLAYER; }

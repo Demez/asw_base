@@ -64,7 +64,7 @@ public:
 
 	virtual int OnTakeDamage( const CTakeDamageInfo &info );
 	void Event_Killed( const CTakeDamageInfo &info );
-	void Break( CBaseEntity *pBreaker, const CTakeDamageInfo &info );
+	virtual void Break( CBaseEntity *pBreaker, const CTakeDamageInfo &info );
 	void BreakThink( void );
 	void AnimateThink( void );
 
@@ -156,12 +156,12 @@ public:
 	// Copy fade from another breakable prop
 	void CopyFadeFrom( CBreakableProp *pSource );
 
-protected:
+// protected:
 
 	bool			UpdateHealth( int iNewHealth, CBaseEntity *pActivator );
 	virtual void	OnBreak( const Vector &vecVelocity, const AngularImpulse &angVel, CBaseEntity *pBreaker ) {}
 
-protected:
+// protected:
 
 	//Base prop_physics can be client-side etc
 	int				m_iPhysicsMode;
@@ -223,7 +223,8 @@ private:
 	void ForceFadeScaleToAlwaysVisible();
 	void RampToDefaultFadeScale();
 
-private:
+// private:
+public:
 	enum PhysgunState_t
 	{
 		PHYSGUN_MUST_BE_DETACHED = 0,

@@ -1652,7 +1652,7 @@ IPhysicsObject *CBreakableProp::GetRootPhysicsObjectForBreak()
 	return VPhysicsGetObject();
 }
 
-static int g_BreakPropEvent = 0;
+int g_BreakPropEvent = 0;
 void CBreakableProp::Break( CBaseEntity *pBreaker, const CTakeDamageInfo &info )
 {
 	const char *pModelName = STRING( GetModelName() );
@@ -1875,7 +1875,10 @@ void CBreakableProp::Break( CBaseEntity *pBreaker, const CTakeDamageInfo &info )
 		}
 	}
 
-	UTIL_Remove( this );
+	// if ( m_bRemoveOnBreak )
+	{
+		// UTIL_Remove( this );
+	}
 }
 
 

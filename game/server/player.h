@@ -259,6 +259,17 @@ public:
 	CBasePlayer();
 	~CBasePlayer();
 
+	// hmm
+	virtual QAngle GetAimPunchAngle()
+	{
+		return m_Local.m_vecPunchAngle;
+	}
+
+	virtual QAngle GetAimPunchAngleVel()
+	{
+		return m_Local.m_vecPunchAngleVel;
+	}
+
 	void					StartUserMessageThrottling( char const *pchMessageNames[], int nNumMessageNames );
 	void					FinishUserMessageThrottling();
 

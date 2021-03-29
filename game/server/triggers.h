@@ -26,15 +26,17 @@ class CBaseTrigger : public CBaseToggle
 	DECLARE_SERVERCLASS();
 public:
 	CBaseTrigger();
+
+	DECLARE_ENT_SCRIPTDESC();
 	
 	void Activate( void );
 	virtual void PostClientActive( void );
-	void InitTrigger( void );
+	virtual void InitTrigger( void );
 
 	virtual void Enable( void );
 	virtual void Disable( void );
 
-	void Spawn( void );
+	virtual void Spawn( void );
 	void UpdateOnRemove( void );
 	void TouchTest(  void );
 
@@ -314,5 +316,6 @@ private:
 private:
 	COutputEvent m_OnEndFollow;
 };
+
 
 #endif // TRIGGERS_H

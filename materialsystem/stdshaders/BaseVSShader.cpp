@@ -959,7 +959,10 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 			// Dimensions of screen, used for screen-space noise map sampling
 			float vScreenScale[4] = {1280.0f / 32.0f, 720.0f / 32.0f, 0, 0};
 			int nWidth, nHeight;
-			pShaderAPI->GetBackBufferDimensions( nWidth, nHeight );
+
+			// DEMEZ TESTING
+			// pShaderAPI->GetBackBufferDimensions( nWidth, nHeight );
+			pShaderAPI->GetCurrentRenderTargetDimensions( nWidth, nHeight );
 
 			int nTexWidth, nTexHeight;
 			pShaderAPI->GetStandardTextureDimensions( &nTexWidth, &nTexHeight, TEXTURE_SHADOW_NOISE_2D );

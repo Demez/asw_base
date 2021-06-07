@@ -3,10 +3,11 @@
 // ---------------------------------------------------------------
 macro PROJECT_NAME "game_shader_dx9"
 
-macro GAMENAME "mod_swarm" [!$GAMENAME]
+macro GAMENAME "demez_asw" [!$GAMENAME]
 macro SRC_DIR "../.."
+
 macro OUT_BIN_NAME "game_shader_dx9"
-macro OUT_BIN_DIR "$SRC_DIR/../game/$GAMENAME/bin"
+macro OUT_BIN_DIR "$SRC_DIR/../../output/$GAMENAME/bin"
 
 include "$SRC_DIR/_qpc_scripts/source_dll_base.qpc"
 
@@ -120,7 +121,7 @@ files
 		"screenspace_general.cpp"
 		"shadow.cpp"
 		"shadowbuild_dx9.cpp"
-		"shadowmodel_dx9.cpp"
+		// "shadowmodel_dx9.cpp"
 		"shatteredglass.cpp"
 		"showz.cpp"
 		"sky_hdr_dx9.cpp"
@@ -141,7 +142,7 @@ files
 		"wireframe_dx9.cpp"
 		"worldtwotextureblend.cpp"
 		"worldvertextransition.cpp"
-		"worldvertextransition_dx8_helper.cpp"
+		// "worldvertextransition_dx8_helper.cpp"
 		"writestencil_dx9.cpp"
 		"writez_dx9.cpp"
 	}

@@ -32,10 +32,12 @@ set SHADERINCPATH=vshtmp9/... fxctmp9/...
 if "%1" == "" goto usage
 set inputbase=%1
 
+set dynamic_shaders=%6
+
 set DIRECTX_SDK_VER=pc09.00
 set DIRECTX_SDK_BIN_DIR=dx9sdk\utilities
 
-if /i "%6" == "-dx9_30" goto dx_sdk_dx9_30
+if /i "%7" == "-dx9_30" goto dx_sdk_dx9_30
 goto dx_sdk_end
 :dx_sdk_dx9_30
 			set DIRECTX_SDK_VER=pc09.30
@@ -43,7 +45,7 @@ goto dx_sdk_end
 			goto dx_sdk_end
 :dx_sdk_end
 
-if /i "%7" == "-force30" goto set_force30_arg
+if /i "%8" == "-force30" goto set_force30_arg
 goto set_force_end
 :set_force30_arg
 			set DIRECTX_FORCE_MODEL=30
@@ -144,6 +146,10 @@ REM ****************
 if exist "inclist.txt" (
 	echo Publishing shader inc files to target...
 	perl %SrcDirBase%\devtools\bin\copyshaderincfiles.pl inclist.txt
+)
+
+if "%dynamic_shaders%" == "1" (
+	goto end
 )
 
 REM ****************

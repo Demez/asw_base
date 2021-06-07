@@ -132,6 +132,7 @@ public:
 	virtual void EnableRendering( ClientRenderHandle_t handle, bool bEnable );
 	virtual void EnableBloatedBounds( ClientRenderHandle_t handle, bool bEnable );
 	virtual void DisableCachedRenderBounds( ClientRenderHandle_t handle, bool bDisable );
+	virtual void DisableFlashlightShadows( ClientRenderHandle_t handle, bool bDisable );
 
 	// Adds a renderable to a set of leaves
 	virtual void AddRenderableToLeaves( ClientRenderHandle_t handle, int nLeafCount, unsigned short *pLeaves );
@@ -193,6 +194,7 @@ private:
 		unsigned short		m_LeafList;					// What leafs is it in?
 		short				m_Area;						// -1 if the renderable spans multiple areas.
 		uint16				m_Flags : 10;				// rendering flags
+		uint16				m_bDisableFlashlightShadows : 1;  // should we not cast shadows from a flashlight?
 		uint16				m_nSplitscreenEnabled : 2;	// splitscreen rendering flags
 		uint16				m_nTranslucencyType : 2;	// RenderableTranslucencyType_t
 		uint16				m_nModelType : 2;			// RenderableModelType_t
@@ -288,6 +290,7 @@ private:
 	// Methods related to renderable list building
 	int ExtractStaticProps( int nCount, RenderableInfo_t **ppRenderables );
 	int ExtractSplitscreenRenderables( int nCount, RenderableInfo_t **ppRenderables );
+	int ExtractFlashlightShadowRenderables( int nCount, RenderableInfo_t **ppRenderables );
 	int ExtractTranslucentRenderables( int nCount, RenderableInfo_t **ppRenderables );
 	int ExtractDuplicates( int nFrameNumber, int nCount, RenderableInfo_t **ppRenderables );
 	void ComputeBounds( int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo );
@@ -780,6 +783,7 @@ void CClientLeafSystem::CreateRenderableHandle( IClientRenderable* pRenderable, 
 	info.m_nRenderFrame = -1;
 	info.m_EnumCount = 0;
 	info.m_nSplitscreenEnabled = nSplitscreenEnabled & 0x3;
+	info.m_bDisableFlashlightShadows = false;
 	info.m_nTranslucencyType = nType;
 	info.m_nModelType = nModelType;
 	info.m_vecBloatedAbsMins.Init( FLT_MAX, FLT_MAX, FLT_MAX );
@@ -899,6 +903,15 @@ void CClientLeafSystem::DisableCachedRenderBounds( ClientRenderHandle_t handle, 
 	{
 		info.m_Flags &= ~RENDER_FLAGS_BOUNDS_ALWAYS_RECOMPUTE;
 	}
+}
+
+void CClientLeafSystem::DisableFlashlightShadows( ClientRenderHandle_t handle, bool bDisable )
+{
+	if ( handle == INVALID_CLIENT_RENDER_HANDLE )
+		return;
+
+	RenderableInfo_t &info = m_Renderables[handle];
+	info.m_bDisableFlashlightShadows = bDisable;
 }
 
 
@@ -1125,6 +1138,7 @@ void CClientLeafSystem::SetSubSystemDataInLeaf( int leaf, int nSubSystemIdx, CCl
 CClientLeafSubSystemData *CClientLeafSystem::GetSubSystemDataInLeaf( int leaf, int nSubSystemIdx )
 {
 	assert( nSubSystemIdx < N_CLSUBSYSTEMS );
+
 	return m_Leaf[leaf].m_pSubSystemData[nSubSystemIdx];
 }
 
@@ -1140,7 +1154,7 @@ void CClientLeafSystem::SetDetailObjectsInLeaf( int leaf, int firstDetailObject,
 		engine->SetLeafFlag( leaf, LEAF_FLAGS_CONTAINS_DETAILOBJECTS );	// for fast searches
 }
 
-//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------^
 // Returns the detail objects in a leaf
 //-----------------------------------------------------------------------------
 void CClientLeafSystem::GetDetailObjectsInLeaf( int leaf, int& firstDetailObject,
@@ -1270,6 +1284,8 @@ void CClientLeafSystem::AddShadowToLeaf( int leaf, ClientLeafShadowHandle_t shad
 	{
 		ClientRenderHandle_t renderable = m_RenderablesInLeaf.Element(i);
 		RenderableInfo_t& info = m_Renderables[renderable];
+
+		info.m_pRenderable->ShouldReceiveProjectedTextures( 0 );
 
 		// Add each shadow exactly once to each renderable
 		if (info.m_EnumCount != m_ShadowEnum)
@@ -1835,6 +1851,28 @@ int CClientLeafSystem::ExtractSplitscreenRenderables( int nCount, RenderableInfo
 		{
 			// Early out on splitscreen renderables if we don't want to render them
 			if ( ( pInfo->m_nSplitscreenEnabled & nSlotMask ) == 0 )
+			{
+				// Necessary for dependent models to be grabbed
+				pInfo->m_nRenderFrame--;
+				continue;
+			}
+		}
+		ppRenderables[nUniqueCount++] = pInfo;
+	}
+	return nUniqueCount;
+}
+
+
+int CClientLeafSystem::ExtractFlashlightShadowRenderables( int nCount, RenderableInfo_t **ppRenderables )
+{
+	int nUniqueCount = 0;
+	for ( int i = 0; i < nCount; ++i )
+	{
+		RenderableInfo_t *pInfo = ppRenderables[i];
+
+		if ( !IsLeafMarker( pInfo ) )
+		{
+			if ( pInfo->m_bDisableFlashlightShadows )
 			{
 				// Necessary for dependent models to be grabbed
 				pInfo->m_nRenderFrame--;
@@ -2605,6 +2643,11 @@ void CClientLeafSystem::BuildRenderablesList( const SetupRenderInfo_t &info )
 	ComputeBounds( nCount, ppRenderables, pRLInfo );
 
 	nCount = ExtractCulledRenderables( nCount, ppRenderables, pRLInfo );
+
+	if ( info.m_nViewID == VIEW_SHADOW_DEPTH_TEXTURE )
+	{
+		nCount = ExtractFlashlightShadowRenderables( nCount, ppRenderables );
+	}
 
 	if ( info.m_bDrawTranslucentObjects )
 	{

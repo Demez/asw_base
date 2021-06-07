@@ -284,6 +284,8 @@ public:
 	// Indicates this renderable should always recompute its bounds accurately
 	virtual void DisableCachedRenderBounds( ClientRenderHandle_t handle, bool bDisable ) = 0;
 
+	virtual void DisableFlashlightShadows( ClientRenderHandle_t handle, bool bDisable ) = 0;
+
 	// Recomputes which leaves renderables are in
 	virtual void RecomputeRenderableLeaves() = 0;
 

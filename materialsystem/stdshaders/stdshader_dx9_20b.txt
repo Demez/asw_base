@@ -193,8 +193,8 @@ shadow_vs20.fxc
 
 shadowbuildtexture_ps2x.fxc
 
-ShadowModel.psh
-ShadowModel.vsh
+// ShadowModel.psh
+// ShadowModel.vsh
 ShatteredGlass_ps2x.fxc
 ShatteredGlass_vs20.fxc
 
@@ -247,7 +247,7 @@ vertexlit_and_unlit_generic_bump_vs20.fxc
 vertexlit_and_unlit_generic_ps2x.fxc
 vertexlit_and_unlit_generic_vs20.fxc
 
-vertexlitgeneric_flashlight_vs11.vsh
+// vertexlitgeneric_flashlight_vs11.vsh
 volume_clouds_vs20.fxc
 volume_clouds_ps2x.fxc
 
@@ -268,6 +268,6 @@ WorldTwoTextureBlend_ps2x.fxc
 
 worldvertexalpha_ps2x.fxc
 
-WorldVertexTransition.vsh
-WorldVertexTransition_Editor.psh
+// WorldVertexTransition.vsh
+// WorldVertexTransition_Editor.psh
 writez_vs20.fxc

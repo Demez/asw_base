@@ -76,6 +76,9 @@ void DispatchEffect( const char *pName, const CEffectData &data )
 		// Get the entry index in the string table.
 		g_TEEffectDispatch.m_EffectData.m_iEffectName = GetEffectIndex( pName );
 
+		if ( g_TEEffectDispatch.m_EffectData.m_iEffectName == 0 )
+			return;
+
 		// Send it to anyone who can see the effect's origin.
 		g_TEEffectDispatch.Create( filter, 0 );
 	}

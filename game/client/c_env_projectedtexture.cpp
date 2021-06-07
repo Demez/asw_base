@@ -151,7 +151,7 @@ void C_EnvProjectedTexture::OnDataChanged( DataUpdateType_t updateType )
 	BaseClass::OnDataChanged( updateType );
 }
 
-static ConVar asw_perf_wtf("asw_perf_wtf", "0", FCVAR_DEVELOPMENTONLY, "Disable updating of projected shadow textures from UpdateLight" );
+static ConVar asw_perf_wtf("asw_perf_wtf", "0", FCVAR_CHEAT, "Disable updating of projected shadow textures from UpdateLight" );
 void C_EnvProjectedTexture::UpdateLight( void )
 {
 	VPROF("C_EnvProjectedTexture::UpdateLight");

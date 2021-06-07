@@ -350,5 +350,5 @@ void CreateHairballCallback()
 	}
 }
 
-ConCommand cc_CreateHairball( "CreateHairball", CreateHairballCallback, 0, FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT );
+ConCommand cc_CreateHairball( "CreateHairball", CreateHairballCallback, 0, FCVAR_CHEAT );
 

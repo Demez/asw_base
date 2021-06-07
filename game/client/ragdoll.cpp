@@ -100,7 +100,7 @@ void CRagdoll::BuildRagdollBounds( C_BaseEntity *ent )
 	m_maxs.Init(radius,radius,radius);
 }
 
-static ConVar cl_ragdoll_self_collision( "cl_ragdoll_self_collision", "1", FCVAR_DEVELOPMENTONLY );
+static ConVar cl_ragdoll_self_collision( "cl_ragdoll_self_collision", "1", FCVAR_NONE );
 extern ConVar cl_ragdoll_collide;
 
 void CRagdoll::Init( 

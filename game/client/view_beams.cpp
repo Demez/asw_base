@@ -2099,7 +2099,7 @@ bool CViewRenderBeams::RecomputeBeamEndpoints( Beam_t *pbeam )
 
 #include "debugoverlay_shared.h"
 #ifdef VPROF_ENABLED
-ConVar cl_beam_test_traces( "cl_beam_test_traces", "0", FCVAR_DEVELOPMENTONLY, "Enable debug overlay on traces that determine where the client-side visible env_beam is drawn. Has no bearing on the server-side damage-causing part of the beam." );
+ConVar cl_beam_test_traces( "cl_beam_test_traces", "0", FCVAR_CHEAT, "Enable debug overlay on traces that determine where the client-side visible env_beam is drawn. Has no bearing on the server-side damage-causing part of the beam." );
 static inline bool BeamDebugOverlay() { return cl_beam_test_traces.GetBool(); }
 #else
 static inline bool BeamDebugOverlay() { return false; }

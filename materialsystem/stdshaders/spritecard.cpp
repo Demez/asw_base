@@ -22,7 +22,7 @@
 
 #define DEFAULT_PARTICLE_FEATHERING_ENABLED 1
 
-static ConVar mat_depthfeather_enable( "mat_depthfeather_enable", "1", FCVAR_DEVELOPMENTONLY );
+static ConVar mat_depthfeather_enable( "mat_depthfeather_enable", "1", FCVAR_CHEAT );
 
 int GetDefaultDepthFeatheringValue( void ) //Allow the command-line to go against the default soft-particle value
 {

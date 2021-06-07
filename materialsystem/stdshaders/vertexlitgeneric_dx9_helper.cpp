@@ -38,7 +38,7 @@ static ConVar mat_phong( "mat_phong", "1" );
 static ConVar mat_displacementmap( "mat_displacementmap", "1", FCVAR_CHEAT );
 
 extern ConVar lm_test;
-static ConVar mat_force_vertexfog( "mat_force_vertexfog", "0", FCVAR_DEVELOPMENTONLY );
+static ConVar mat_force_vertexfog( "mat_force_vertexfog", "0", FCVAR_CHEAT );
 
 static inline bool WantsPhongShader( IMaterialVar** params, const VertexLitGeneric_DX9_Vars_t &info )
 {

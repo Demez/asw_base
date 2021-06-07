@@ -3563,7 +3563,7 @@ void CGameMovement::UnblockPusher( CBasePlayer *pPlayer, CBaseEntity *pPusher )
 }
 
 #if defined( CLIENT_DLL )
-static ConVar cl_pred_checkstuck( "cl_pred_checkstuck", "0", FCVAR_DEVELOPMENTONLY, "Perform the additional 'stuck' traces on the client side during prediction." );
+static ConVar cl_pred_checkstuck( "cl_pred_checkstuck", "0", FCVAR_CHEAT, "Perform the additional 'stuck' traces on the client side during prediction." );
 #endif
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -4022,13 +4022,13 @@ void CGameMovement::CategorizePosition( void )
 	// NOTE YWB 7/5/07:  Since we're already doing a traceline here, we'll subsume the StayOnGround (stair debouncing) check into the main traceline we do here to see what we're standing on
 	bool bUnderwater = ( player->GetWaterLevel() >= WL_Eyes );
 	bool bMoveToEndPos = false;
-	if ( player->GetMoveType() == MOVETYPE_WALK && 
+	/*if ( player->GetMoveType() == MOVETYPE_WALK && 
 		player->GetGroundEntity() != NULL && !bUnderwater )
 	{
 		// if walking and still think we're on ground, we'll extend trace down by stepsize so we don't bounce down slopes
 		bMoveToEndPos = true;
 		point.z -= player->m_Local.m_flStepSize;
-	}
+	}*/
 
 	// Was on ground, but now suddenly am not
 	if ( bMovingUpRapidly || 

@@ -71,6 +71,10 @@
 #include "clientmode_asw.h"
 #endif
 
+#if VR
+#include "vr.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1483,7 +1487,10 @@ void CViewRender::ViewDrawScene( bool bDrew3dSkybox, SkyboxVisibility_t nSkyboxV
 
 	// Draw client side effects
 	// NOTE: These are not sorted against the rest of the frame
-	clienteffects->DrawEffects( gpGlobals->frametime );	
+	if ( !InVRRender() )
+	{
+		clienteffects->DrawEffects( gpGlobals->frametime );	
+	}
 
 	// Mark the frame as locked down for client fx additions
 	SetFXCreationAllowed( false );
@@ -2339,8 +2346,6 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 		}
 	#endif
 
-
-
 		g_bRenderingView = true;
 
 		RenderPreScene( view );
@@ -2348,10 +2353,13 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 		// Must be first 
 		render->SceneBegin();
 
-		g_pColorCorrectionMgr->UpdateColorCorrection();
+		if ( !InVRRender() )
+		{
+			g_pColorCorrectionMgr->UpdateColorCorrection();
 
-		// Send the current tonemap scalar to the material system
-		UpdateMaterialSystemTonemapScalar();
+			// Send the current tonemap scalar to the material system
+			UpdateMaterialSystemTonemapScalar();
+		}
 
 		// clear happens here probably
 		SetupMain3DView( slot, view, hudViewSetup, nClearFlags, saveRenderTarget );
@@ -2460,19 +2468,15 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 				pRenderContext.GetFrom( materials );
 				{
 					PIXEVENT( pRenderContext, "DoImageSpaceMotionBlur()" );
-					DoImageSpaceMotionBlur( view );
+
+					if ( !InVRRender() )
+					{
+						DoImageSpaceMotionBlur( view );
+					}
 				}
 				pRenderContext.SafeRelease();
 			}
 		}
-
-		#if defined( _X360 )
-		{
-			CMatRenderContextPtr pRenderContext( materials );
-			pRenderContext->PopVertexShaderGPRAllocation();
-			pRenderContext.SafeRelease();
-		}
-		#endif
 
 		// Now actually draw the viewmodel
 		DrawViewModels( view, whatToDraw & RENDERVIEW_DRAWVIEWMODEL );
@@ -2480,14 +2484,6 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 		DrawUnderwaterOverlay();
 
 		PixelVisibility_EndScene();
-
-		#if defined( _X360 )
-		{
-			CMatRenderContextPtr pRenderContext( materials );
-			pRenderContext->PushVertexShaderGPRAllocation( 16 ); //Max out pixel shader threads
-			pRenderContext.SafeRelease();
-		}
-		#endif
 
 		// Draw fade over entire screen if needed
 		byte color[4];
@@ -2536,29 +2532,24 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 				{
 					bFlashlightIsOn = pLocal->IsEffectActive( EF_DIMLIGHT );
 				}
-				DoEnginePostProcessing( view.x, view.y, view.width, view.height, bFlashlightIsOn );
+
+				if ( !InVRRender() )
+				{
+					DoEnginePostProcessing( view.x, view.y, view.width, view.height, bFlashlightIsOn );
+				}
 			}
 			pRenderContext.SafeRelease();
 		}
 
 		// And here are the screen-space effects
 
-		if ( IsPC() )
+		// Grab the pre-color corrected frame for editing purposes
+		engine->GrabPreColorCorrectedFrame( view.x, view.y, view.width, view.height );
+		
+		if ( !InVRRender() )
 		{
-			// Grab the pre-color corrected frame for editing purposes
-			engine->GrabPreColorCorrectedFrame( view.x, view.y, view.width, view.height );
+			PerformScreenSpaceEffects( view.x, view.y, view.width, view.height );
 		}
-
-		PerformScreenSpaceEffects( view.x, view.y, view.width, view.height );
-
-
-		#if defined( _X360 )
-		{
-			CMatRenderContextPtr pRenderContext( materials );
-			pRenderContext->PopVertexShaderGPRAllocation();
-			pRenderContext.SafeRelease();
-		}
-		#endif
 
 		GetClientMode()->DoPostScreenSpaceEffects( &view );
 
@@ -2567,15 +2558,7 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 		if ( m_FreezeParams[ slot ].m_bTakeFreezeFrame )
 		{
 			pRenderContext = materials->GetRenderContext();
-			if ( IsX360() )
-			{
-				// 360 doesn't create the Fullscreen texture
-				pRenderContext->CopyRenderTargetToTextureEx( GetFullFrameFrameBufferTexture( 1 ), 0, NULL, NULL );
-			}
-			else
-			{
-				pRenderContext->CopyRenderTargetToTextureEx( GetFullscreenTexture(), 0, NULL, NULL );
-			}
+			pRenderContext->CopyRenderTargetToTextureEx( GetFullscreenTexture(), 0, NULL, NULL );
 			pRenderContext.SafeRelease();
 			m_FreezeParams[ slot ].m_bTakeFreezeFrame = false;
 		}
@@ -2701,10 +2684,7 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 		// We can no longer use the 'current view' stuff set up in ViewDrawScene
 		AllowCurrentViewAccess( false );
 
-		if ( IsPC() )
-		{
-			CDebugViewRender::GenerateOverdrawForTesting();
-		}
+		CDebugViewRender::GenerateOverdrawForTesting();
 
 		render->PopView( GetFrustum() );
 	}

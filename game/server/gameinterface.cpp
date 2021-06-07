@@ -112,10 +112,9 @@
 #include "asw_gamerules.h"
 #endif
 
-
-
-
-
+#if DEMEZ_HL2
+#include "d_gamemanager.h"
+#endif
 
 
 #ifdef _WIN32
@@ -1057,6 +1056,10 @@ bool CServerGameDLL::LevelInit( const char *pMapName, char const *pMapEntities, 
 	VPROF("CServerGameDLL::LevelInit");
 	ResetWindspeed();
 	UpdateChapterRestrictions( pMapName );
+
+#if DEMEZ_HL2
+	DemezGameManager()->LevelInit( pMapName );
+#endif
 
 	// IGameSystem::LevelInitPreEntityAllSystems() is called when the world is precached
 	// That happens either in LoadGameState() or in MapEntity_ParseAllEntities()

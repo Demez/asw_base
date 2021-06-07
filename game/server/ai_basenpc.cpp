@@ -3941,12 +3941,13 @@ void CAI_BaseNPC::SetPlayerAvoidState( void )
 
 		GetPlayerAvoidBounds( &vMins, &vMaxs );
 
-		CBasePlayer *pLocalPlayer = UTIL_GetNearestPlayerPreferVisible( this );
-
-		if ( pLocalPlayer )
+		UTIL_FOREACHPLAYER( i )
 		{
+			UTIL_GETNEXTPLAYER( i );
 			bShouldPlayerAvoid = IsBoxIntersectingBox( GetAbsOrigin() + vMins, GetAbsOrigin() + vMaxs, 
-				pLocalPlayer->GetAbsOrigin() + pLocalPlayer->WorldAlignMins(), pLocalPlayer->GetAbsOrigin() + pLocalPlayer->WorldAlignMaxs() );
+													  pPlayer->GetAbsOrigin() + pPlayer->WorldAlignMins(), pPlayer->GetAbsOrigin() + pPlayer->WorldAlignMaxs() );
+			if ( bShouldPlayerAvoid )
+				break;
 		}
 
 		if ( ai_debug_avoidancebounds.GetBool() )
@@ -12900,6 +12901,14 @@ void CAI_BaseNPC::TestPlayerPushing( CBaseEntity *pEntity )
 			Vector vecPush = GetAbsOrigin() - pPlayer->GetAbsOrigin();
 			VectorNormalize( vecPush );
 			CascadePlayerPush( vecPush, pPlayer->WorldSpaceCenter() );
+
+			// DEMEZ TESTING: maybe better npc push testing
+			/*trace_t	trace;
+			CTraceFilterSkipTwoEntities pFilter( this, pPlayer, COLLISION_GROUP_NPC );
+
+			Vector goalPos = GetAbsOrigin() + (vecPush / 2);
+			UTIL_TraceHull( GetAbsOrigin(), goalPos, GetHullMins(), GetHullMaxs(), COLLISION_GROUP_NPC, &pFilter, &trace );
+			SetAbsOrigin( trace.endpos );*/
 		}
 	}
 }

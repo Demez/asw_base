@@ -680,6 +680,8 @@ bool CAI_Pathfinder::IsLinkUsable(CAI_Link *pLink, int startID)
 	// --------------------------------------------------------------------------
 	if (pLink->m_LinkInfo & ( bits_LINK_OFF | bits_LINK_ASW_BASHABLE ) )
 	{
+		// DEMEZ TODO: using mp_restartgame causes at least one of these links to have a random entity in it,
+		// which is obviously not a CAI_DynamicLink, so it causes this to crash
 		CAI_DynamicLink *pDynamicLink = pLink->m_pDynamicLink;
 
 		if ( !pDynamicLink  || pDynamicLink->m_strAllowUse == NULL_STRING )

@@ -12,6 +12,7 @@
 
 struct dlight_t;
 
+#include "vstdlib/random.h"
 
 class CFlashlightEffect
 {
@@ -75,6 +76,8 @@ protected:
 	CTextureReference m_MuzzleFlashTexture;
 
 	char m_textureName[64];
+
+	float m_dieTime;
 };
 
 class CHeadlightEffect : public CFlashlightEffect
@@ -221,7 +224,7 @@ public:
 	{
 		m_nMuzzleFlashFrameCountdown = 2;
 		m_muzzleFlashTimer.Start( 0.066f );		// show muzzleflash for 2 frames or 66ms, whichever is longer
-		m_flMuzzleFlashBrightness = random->RandomFloat( 0.4f, 2.0f );
+		m_flMuzzleFlashBrightness = RandomFloat( 0.4f, 2.0f );
 	}
 
 	const char *GetFlashlightTextureName( void ) const

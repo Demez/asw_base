@@ -136,7 +136,7 @@ public:
 	void		ComputeForwardMove( int nSlot, CUserCmd *cmd );
 	void		ComputeUpwardMove( int nSlot, CUserCmd *cmd );
 	void		ComputeSideMove( int nSlot, CUserCmd *cmd );
-	void		AdjustAngles ( int nSlot, float frametime );
+	virtual void		AdjustAngles ( int nSlot, float frametime );
 	void		ClampAngles( QAngle& viewangles );
 	void		AdjustPitch( int nSlot, float speed, QAngle& viewangles );
 	void		AdjustYaw( int nSlot, float speed, QAngle& viewangles );

@@ -27,6 +27,7 @@
 #include "tier0/threadtools.h"
 #include "datacache/idatacache.h"
 #include "toolframework/itoolframework.h"
+#include "flashlighteffect.h"
 
 #define LIPSYNC_POSEPARAM_NAME "mouth"
 #define NUM_HITBOX_FIRES	10
@@ -657,6 +658,9 @@ private:
 
 	CUtlReference<CNewParticleEffect>	m_ejectBrassEffect;
 	int									m_iEjectBrassAttachment;
+
+public:
+	CFlashlightEffectManager* m_flashlightMgr;
 };
 
 enum 

@@ -56,6 +56,7 @@
 #include "c_entityflame.h"
 #include "npcevent.h"
 #include "replay_ragdoll.h"
+#include "flashlighteffect.h"
 
 #include "clientalphaproperty.h"
 
@@ -752,6 +753,8 @@ C_BaseAnimating::C_BaseAnimating() :
 	m_pJiggleBones = NULL;
 	m_isJiggleBonesEnabled = true;
 	AddToEntityList(ENTITY_LIST_SIMULATE);
+
+	m_flashlightMgr = new CFlashlightEffectManager;
 }
 
 //-----------------------------------------------------------------------------
@@ -786,6 +789,8 @@ C_BaseAnimating::~C_BaseAnimating()
 		delete m_pJiggleBones;
 		m_pJiggleBones = NULL;
 	}
+
+	delete m_flashlightMgr;
 }
 
 int C_BaseAnimating::GetRenderFlags( void )
@@ -3544,6 +3549,7 @@ int C_BaseAnimating::InternalDrawModel( int flags, const RenderableInstance_t &i
 }
 
 extern ConVar muzzleflash_light;
+ConVar d_muzzle_flashlight("d_muzzle_flashlight", "1", FCVAR_ARCHIVE);
 
 void C_BaseAnimating::ProcessMuzzleFlashEvent()
 {
@@ -3557,16 +3563,25 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 			QAngle dummyAngles;
 			GetAttachment( 1, vAttachment, dummyAngles );
 
-			// Make an elight
-			dlight_t *el = effects->CL_AllocElight( LIGHT_INDEX_MUZZLEFLASH + index );
-			el->origin = vAttachment;
-			el->radius = random->RandomInt( 32, 64 ); 
-			el->decay = el->radius / 0.05f;
-			el->die = gpGlobals->curtime + 0.05f;
-			el->color.r = 255;
-			el->color.g = 192;
-			el->color.b = 64;
-			el->color.exponent = 5;
+			// dumb, if it's on the player only, then just move this code to player and override this function
+			// though i want to try it on all npc's first and see how much of an fps drain it is lmao
+			if ( d_muzzle_flashlight.GetBool() && m_flashlightMgr )
+			{
+				m_flashlightMgr->TriggerMuzzleFlash();
+			}
+			else
+			{
+				// Make an elight
+				dlight_t *el = effects->CL_AllocElight( LIGHT_INDEX_MUZZLEFLASH + index );
+				el->origin = vAttachment;
+				el->radius = random->RandomInt( 32, 64 ); 
+				el->decay = el->radius / 0.05f;
+				el->die = gpGlobals->curtime + 0.05f;
+				el->color.r = 255;
+				el->color.g = 192;
+				el->color.b = 64;
+				el->color.exponent = 5;
+			}
 		}
 	}
 }
@@ -5334,6 +5349,20 @@ bool C_BaseAnimating::Simulate()
 	{
 		ClearRagdoll();
 	}
+
+	// hmm
+	if ( m_flashlightMgr )
+	{
+		Vector muzzlePos;
+		QAngle muzzleAng;
+		Vector muzzleForward, muzzleRight, muzzleUp;
+		if ( GetAttachment( LookupAttachment( "muzzle" ), muzzlePos, muzzleAng ) )
+		{
+			AngleVectors( muzzleAng, &muzzleForward, &muzzleRight, &muzzleUp );
+			m_flashlightMgr->UpdateFlashlight( muzzlePos - muzzleForward * 4, muzzleForward, muzzleRight, muzzleUp, 60, true, 500, 0/*, "effects/flashlight001"*/ );
+		}
+	}
+
 	return bRet;
 }
 

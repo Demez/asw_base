@@ -844,7 +844,7 @@ void UpdateMaterialSystemTonemapScalar()
 
 void CTonemapSystem::UpdateMaterialSystemTonemapScalar()
 {
-	if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
+	/*if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
 	{
 		// Deal with forced tone map scalar
 		float flForcedTonemapScale = mat_force_tonemap_scale.GetFloat();
@@ -884,7 +884,7 @@ void CTonemapSystem::UpdateMaterialSystemTonemapScalar()
 		CMatRenderContextPtr pRenderContext( materials );
 		pRenderContext->SetToneMappingScaleLinear( Vector( m_flCurrentTonemapScale, m_flCurrentTonemapScale, m_flCurrentTonemapScale ) );
 	}
-	else
+	else*/
 	{
 		// Send 1.0 to the material system since HDR is disabled
 		CMatRenderContextPtr pRenderContext( materials );

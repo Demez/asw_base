@@ -2463,16 +2463,12 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 				pRenderContext.SafeRelease();
 			}
 
-			if ( ( view.m_nMotionBlurMode != MOTION_BLUR_DISABLE ) && ( mat_motion_blur_enabled.GetInt() ) )
+			if ( ( view.m_nMotionBlurMode != MOTION_BLUR_DISABLE ) && ( mat_motion_blur_enabled.GetInt() ) && !InVRRender() )
 			{
 				pRenderContext.GetFrom( materials );
 				{
 					PIXEVENT( pRenderContext, "DoImageSpaceMotionBlur()" );
-
-					if ( !InVRRender() )
-					{
-						DoImageSpaceMotionBlur( view );
-					}
+					DoImageSpaceMotionBlur( view );
 				}
 				pRenderContext.SafeRelease();
 			}
@@ -2509,7 +2505,7 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 			pRenderContext.SafeRelease();
 		}
 
-		if ( !building_cubemaps.GetBool() && view.m_bDoBloomAndToneMapping )
+		if ( !building_cubemaps.GetBool() && view.m_bDoBloomAndToneMapping && !InVRRender() )
 		{
 			pRenderContext.GetFrom( materials );
 			{
@@ -2533,10 +2529,7 @@ void CViewRender::RenderView( const CViewSetup &view, const CViewSetup &hudViewS
 					bFlashlightIsOn = pLocal->IsEffectActive( EF_DIMLIGHT );
 				}
 
-				if ( !InVRRender() )
-				{
-					DoEnginePostProcessing( view.x, view.y, view.width, view.height, bFlashlightIsOn );
-				}
+				DoEnginePostProcessing( view.x, view.y, view.width, view.height, bFlashlightIsOn );
 			}
 			pRenderContext.SafeRelease();
 		}
@@ -2882,7 +2875,7 @@ void CViewRender::DrawWorldAndEntities( bool bDrawSkybox, const CViewSetup &view
 	DetermineWaterRenderInfo( fogVolumeInfo, info );
 
 	if ( info.m_bCheapWater )
-	{		     
+	{
 		cplane_t glassReflectionPlane;
 		if ( IsReflectiveGlassInView( viewIn, glassReflectionPlane ) )
 		{								    
@@ -5563,10 +5556,6 @@ void CSimpleWorldView::Draw()
 	CMatRenderContextPtr pRenderContext( materials );
 	PIXEVENT( pRenderContext, "CSimpleWorldView::Draw" );
 
-#if defined( _X360 )
-	pRenderContext->PushVertexShaderGPRAllocation( 32 ); //lean toward pixel shader threads
-#endif
-
 	pRenderContext.SafeRelease();
 
 	DrawSetup( 0, m_DrawFlags, 0 );
@@ -5594,10 +5583,6 @@ void CSimpleWorldView::Draw()
 
 	pRenderContext.GetFrom( materials );
 	pRenderContext->ClearColor4ub( 0, 0, 0, 255 );
-
-#if defined( _X360 )
-	pRenderContext->PopVertexShaderGPRAllocation();
-#endif
 }
 
 
@@ -5664,6 +5649,9 @@ void CAboveWaterView::Setup( const CViewSetup &view, bool bDrawSkybox, const Vis
 {
 	BaseClass::Setup( view );
 
+	// if ( InTestRender() )
+	// 	return;
+
 	m_bSoftwareUserClipPlane = g_pMaterialSystemHardwareConfig->UseFastClipping();
 
 	CalcWaterEyeAdjustments( fogInfo, m_waterHeight, m_waterZAdjust, m_bSoftwareUserClipPlane );
@@ -5674,24 +5662,29 @@ void CAboveWaterView::Setup( const CViewSetup &view, bool bDrawSkybox, const Vis
 		m_bSoftwareUserClipPlane = false;
 	}
 
-	m_DrawFlags = DF_RENDER_ABOVEWATER | DF_DRAW_ENTITITES;
-	m_ClearFlags = VIEW_CLEAR_DEPTH;
-
-
-
-	if ( bDrawSkybox )
+	// if ( !InTestRender() )
 	{
-		m_DrawFlags |= DF_DRAWSKYBOX;
-	}
+		m_DrawFlags = DF_RENDER_ABOVEWATER | DF_DRAW_ENTITITES;
+		m_ClearFlags = VIEW_CLEAR_DEPTH;
 
-	if ( waterInfo.m_bDrawWaterSurface )
-	{
-		m_DrawFlags |= DF_RENDER_WATER;
+		if ( bDrawSkybox )
+		{
+			m_DrawFlags |= DF_DRAWSKYBOX;
+		}
+
+		if ( waterInfo.m_bDrawWaterSurface )
+		{
+			m_DrawFlags |= DF_RENDER_WATER;
+		}
+		if ( !waterInfo.m_bRefract && !waterInfo.m_bOpaqueWater )
+		{
+			m_DrawFlags |= DF_RENDER_UNDERWATER;
+		}
 	}
-	if ( !waterInfo.m_bRefract && !waterInfo.m_bOpaqueWater )
+	/*else
 	{
-		m_DrawFlags |= DF_RENDER_UNDERWATER;
-	}
+		m_DrawFlags = 0;
+	}*/
 
 	m_fogInfo = fogInfo;
 	m_waterInfo = waterInfo;
@@ -5703,6 +5696,9 @@ void CAboveWaterView::Setup( const CViewSetup &view, bool bDrawSkybox, const Vis
 //-----------------------------------------------------------------------------
 void CAboveWaterView::Draw()
 {
+	// if ( InTestRender() )
+	// 	return;
+
 	VPROF( "CViewRender::ViewDrawScene_EyeAboveWater" );
 
 	// eye is outside of water

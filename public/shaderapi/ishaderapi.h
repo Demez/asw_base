@@ -761,7 +761,25 @@ public:
 	virtual void OnPresent( void ) = 0;
 
 	virtual void UpdateGameTime( float flTime ) = 0;
+
+	virtual bool  VR_Supported() = 0;
+	virtual void* VR_GetSubmitInfo( ShaderAPITextureHandle_t handle ) = 0;
+	virtual void* VR_GetSubmitInfo( ITexture* texture ) = 0;
+	virtual void* VR_GetDevice() = 0;
 };
+
+
+/*#define SHADERAPI_VR_INTERFACE_VERSION		"ShaderApi001"
+
+class IShaderAPIVR
+{
+public:
+	virtual bool  Init() = 0;
+	virtual bool  VR_Supported() = 0;
+	virtual void* VR_GetSubmitInfo( ShaderAPITextureHandle_t handle ) = 0;
+	virtual void* VR_GetSubmitInfo( ITexture* texture ) = 0;
+	virtual void* VR_GetDevice() = 0;
+};*/
 
 
 #endif // ISHADERAPI_H

@@ -4137,6 +4137,8 @@ void CBaseEntity::SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways )
 
 	pInfo->m_pTransmitEdict->Set( index );
 
+	// DEMEZ TODO: maybe i can have all entities always transmit if the local player is recording a demo?
+
 	// HLTV/Replay need to know if this entity is culled by PVS limits
 	if ( pInfo->m_pTransmitAlways )
 	{

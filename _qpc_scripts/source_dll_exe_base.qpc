@@ -7,7 +7,7 @@ macro SRC_DIR [!$SRC_DIR]
 
 include "$SRC_DIR/_qpc_scripts/source_base.qpc"
 
-macro OUT_BIN_NAME "$SCRIPT_NAME" [!$OUT_BIN_NAME]
+macro OUT_BIN_NAME "$PROJECT_SCRIPT_NAME" [!$OUT_BIN_NAME]
 
 macro OUT_BIN_DIR [!$OUT_BIN_DIR]
 macro OUT_BIN_DIR "$OUT_BIN_DIR$PLATSUBDIR"

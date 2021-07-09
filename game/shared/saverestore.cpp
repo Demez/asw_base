@@ -2551,7 +2551,8 @@ void CEntitySaveRestoreBlockHandler::Save( ISave *pSave )
 			pEntInfo->globalname = pEnt->m_iGlobalname; // remember global name
 			pEntInfo->landmarkModelSpace = ModelSpaceLandmark( pEnt->GetModelIndex() );
 			int nEntIndex = pEnt->edict() ? ENTINDEX(pEnt->edict()) : -1;
-			bool bIsPlayer = ( ( nEntIndex >= 1 ) && ( nEntIndex <= gpGlobals->maxClients ) ) ? true : false;
+			// bool bIsPlayer = ( ( nEntIndex >= 1 ) && ( nEntIndex <= gpGlobals->maxClients ) ) ? true : false;
+			bool bIsPlayer = pEnt->IsPlayer();
 			if ( bIsPlayer )
 			{
 				pEntInfo->flags |= FENTTABLE_PLAYER;

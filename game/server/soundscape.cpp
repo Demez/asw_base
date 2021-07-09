@@ -247,6 +247,13 @@ void CEnvSoundscape::WriteAudioParamsTo( audioparams_t &audio )
 // CONSIDER: if player in water state, autoset and underwater soundscape? 
 void CEnvSoundscape::UpdateForPlayer( ss_update_t &update )
 {
+#ifdef _DEBUG
+	if ( (unsigned int)this == 0xDDDDDDDD )
+	{
+		return;
+	}
+#endif
+
 	if ( !IsEnabled() )
 	{
 		if ( update.pCurrentSoundscape == this )

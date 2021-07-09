@@ -73,7 +73,7 @@ REM ****************
 :set_mod_args
 
 if not exist %SDKBINDIR%\shadercompile.exe goto NoShaderCompile
-set ChangeToDir=%SDKBINDIR%
+set "ChangeToDir=%SDKBINDIR%"
 
 if /i "%4" NEQ "-source" goto NoSourceDirSpecified
 set SrcDirBase=%~5
@@ -169,6 +169,8 @@ echo %SDKBINDIR%\shadercompile_dll.dll >> filestocopy.txt
 echo %SDKBINDIR%\vstdlib.dll >> filestocopy.txt
 echo %SDKBINDIR%\tier0.dll >> filestocopy.txt
 
+echo %SDKBINDIR%\tier0.dll
+
 REM ****************
 REM Cull duplicate entries in work/build list
 REM ****************
@@ -182,12 +184,18 @@ REM ****************
 REM Execute distributed process on work/build list
 REM ****************
 
+set threadcount=11
 set shader_path_cd=%cd%
+
+echo building shaders
 if exist "filelist.txt" if exist "uniquefilestocopy.txt" if not "%dynamic_shaders%" == "1" (
 	echo Running distributed shader compilation...
 
-	cd /D %ChangeToDir%
-	%shadercompilecommand% %SDKArgs% -shaderpath "%shader_path_cd:/=\%" -allowdebug
+	@REM cd /D %ChangeToDir%
+	cd /D %SDKBINDIR%
+	
+	echo %shadercompilecommand% %SDKArgs% -nompi -threads %threadcount% -shaderpath "%shader_path_cd:/=\%" -allowdebug
+	%shadercompilecommand% %SDKArgs% -nompi -threads %threadcount% -shaderpath "%shader_path_cd:/=\%" -allowdebug
 	cd /D %shader_path_cd%
 )
 

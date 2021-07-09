@@ -186,6 +186,12 @@ static void RagdollAddSolids( IPhysicsEnvironment *pPhysEnv, ragdoll_t &ragdoll,
 
 static void RagdollAddConstraints( IPhysicsEnvironment *pPhysEnv, ragdoll_t &ragdoll, const ragdollparams_t &params, const cache_ragdollconstraint_t *pConstraints, int constraintCount )
 {
+	if ( pPhysEnv == NULL )
+	{
+		Warning("DEMEZ: RagdollAddConstraints() - pPhysEnv is NULL?\n");
+		return;
+	}
+
 	constraint_ragdollparams_t constraint;
 	for ( int i = 0; i < constraintCount; i++ )
 	{

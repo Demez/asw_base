@@ -1470,7 +1470,8 @@ void CBaseCombatCharacter::ThrowDirForWeaponStrip( CBaseCombatWeapon *pWeapon, c
 	// This is necessary for the physgun upgrade scene.
 	if ( FClassnameIs( pWeapon, "weapon_physcannon" ) )
 	{
-		if( hl2_episodic.GetBool() )
+		// why should this only be for episodic?
+		// if( hl2_episodic.GetBool() )
 		{
 			// It has been discovered that it's possible to throw the physcannon out of the world this way.
 			// So try to find a direction to throw the physcannon that's legal.

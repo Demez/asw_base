@@ -217,7 +217,7 @@ public:
 	bool UsingFlashlight( IMaterialVar **params ) const;
 	bool UsingEditor( IMaterialVar **params ) const;
 
-	void ApplyColor2Factor( float *pColorOut ) const;		// (*pColorOut) *= COLOR2
+	void ApplyColor2Factor( float *pColorOut, bool isLinearSpace = false ) const;		// (*pColorOut) *= COLOR2
 
 private:
 	// This is a per-instance state which is handled completely by the system

@@ -167,6 +167,9 @@ typedef void * HINSTANCE;
 #define IsX360()	IsPlatformX360()
 #define IsPS3()		IsPlatformPS3()
 
+#define IsGameConsole()	false
+#define IsOSXOpenGL()	false
+
 // Setup platform defines.
 #ifdef COMPILER_MSVC
 #define MSVC 1

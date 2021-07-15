@@ -69,7 +69,7 @@ struct studiohdr_t;
 #else
 #define MAXSTUDIOTRIANGLES	65536	// TODO: tune this
 #define MAXSTUDIOVERTS		65536	// TODO: tune this
-#define	MAXSTUDIOFLEXVERTS	10000	// max number of verts that can be flexed per mesh.  TODO: tune this
+#define	MAXSTUDIOFLEXVERTS	65536   // 10000	// max number of verts that can be flexed per mesh.  TODO: tune this
 #endif
 #define MAXSTUDIOSKINS		32		// total textures
 #define MAXSTUDIOBONES		128		// total bones actually used
@@ -1790,6 +1790,8 @@ struct virtualmodel_t
 	virtualgroup_t *pSeqGroup( int sequence ) { return &m_group[ m_seq[ sequence ].group ]; }; // Note: user must manage mutex for this
 
     CThreadFastMutex m_Lock;
+	
+	int m_origVersion = STUDIO_VERSION;
 
 	CUtlVector< virtualsequence_t > m_seq;
 	CUtlVector< virtualgeneric_t > m_anim;
@@ -2388,6 +2390,9 @@ struct studiohdr_t
 	// implementation specific back pointer to virtual data
 	mutable void		*virtualModel;
 	virtualmodel_t		*GetVirtualModel( void ) const;
+
+	// DEMEZ STUDIO
+	inline int			GetOriginalVersion( void ) { return GetVirtualModel() ? GetVirtualModel()->m_origVersion : STUDIO_VERSION; }
 
 	// for demand loaded animation blocks
 	int					szanimblocknameindex;	
@@ -3201,6 +3206,12 @@ inline bool Studio_ConvertStudioHdrToNewVersion( studiohdr_t *pStudioHdr )
 	}
 	// for now, just slam the version number since they're compatible
 	pStudioHdr->version = STUDIO_VERSION;
+
+	// DEMEZ STUDIO: just kinda store it here
+	if ( pStudioHdr->GetVirtualModel() )
+	{
+		pStudioHdr->GetVirtualModel()->m_origVersion = version;
+	}
 
 	return bResult;
 }

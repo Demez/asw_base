@@ -2243,7 +2243,12 @@ const char *GetMaterialNameFromIndex( int nMaterialIndex )
 int PrecacheParticleSystem( const char *pParticleSystemName )
 {
 	Assert( pParticleSystemName && pParticleSystemName[0] );
-	return g_pStringTableParticleEffectNames->AddString( CBaseEntity::IsServer(), pParticleSystemName );
+	int ret = g_pStringTableParticleEffectNames->AddString( CBaseEntity::IsServer(), pParticleSystemName );
+
+	// hack lol
+	PrecacheEffect( pParticleSystemName );
+
+	return ret;
 }
 
 void PrecacheParticleFileAndSystems( const char *pParticleSystemFile )
@@ -2317,6 +2322,14 @@ int GetEffectIndex( const char *pEffectName )
 {
 	if ( pEffectName )
 	{
+		return g_pStringTableEffectDispatch->AddString( CBaseEntity::IsServer(), pEffectName );
+	}
+
+	// This is the invalid string index
+	return 0;
+
+	/*if ( pEffectName )
+	{
 		int nIndex = g_pStringTableEffectDispatch->FindStringIndex( pEffectName );
 		if (nIndex != INVALID_STRING_INDEX )
 			return nIndex;
@@ -2325,7 +2338,7 @@ int GetEffectIndex( const char *pEffectName )
 	}
 
 	// This is the invalid string index
-	return 0;
+	return 0;*/
 }
 
 //-----------------------------------------------------------------------------

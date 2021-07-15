@@ -51,6 +51,7 @@ BEGIN_VS_SHADER( EyeRefract_dx9, "Help for Eyes" )
 		SHADER_PARAM( EMISSIVEBLENDSCROLLVECTOR, SHADER_PARAM_TYPE_VEC2, "[0.11 0.124]", "Emissive scroll vec" )
 		SHADER_PARAM( EMISSIVEBLENDSTRENGTH, SHADER_PARAM_TYPE_FLOAT, "1.0", "Emissive blend strength" )
 		SHADER_PARAM( EMISSIVEBLENDTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "self-illumination map" )
+		SHADER_PARAM( EMISSIVEBLENDBASETEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "self-illumination map" )
 		SHADER_PARAM( EMISSIVEBLENDTINT, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Self-illumination tint" )
 		SHADER_PARAM( EMISSIVEBLENDFLOWTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "flow map" )
 	END_SHADER_PARAMS
@@ -121,7 +122,8 @@ BEGIN_VS_SHADER( EyeRefract_dx9, "Help for Eyes" )
 	void SetupVarsEmissiveScrollBlendedPass( EmissiveScrollBlendedPassVars_t &info )
 	{
 		info.m_nBlendStrength = EMISSIVEBLENDSTRENGTH;
-		info.m_nBaseTexture = IRIS;
+		// info.m_nBaseTexture = IRIS;
+		info.m_nBaseTexture = EMISSIVEBLENDBASETEXTURE;
 		info.m_nFlowTexture = EMISSIVEBLENDFLOWTEXTURE;
 		info.m_nEmissiveTexture = EMISSIVEBLENDTEXTURE;
 		info.m_nEmissiveTint = EMISSIVEBLENDTINT;

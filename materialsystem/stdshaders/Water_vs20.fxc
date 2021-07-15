@@ -49,9 +49,9 @@ struct VS_OUTPUT
 	float4 vReflectXY_vRefractYX	: TEXCOORD2;
 	float4 vProjPos					: TEXCOORD3;
 	float3 worldPos					: TEXCOORD4;
-	#if FLASHLIGHT
-		float4 flashlightSpacePos       : TEXCOORD5;
-	#endif
+	// #if FLASHLIGHT
+	// 	float4 flashlightSpacePos       : TEXCOORD5;
+	// #endif
 	#if MULTITEXTURE
 		float4 vExtraBumpTexCoord		: TEXCOORD5;
 	#endif
@@ -150,7 +150,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	
 	#if FLASHLIGHT
 	{
-		o.flashlightSpacePos = mul( float4( vWorldPos, 1.0f ), g_FlashlightWorldToTexture );
+		// o.flashlightSpacePos = mul( float4( vWorldPos, 1.0f ), g_FlashlightWorldToTexture );
 	}
 	#endif
 

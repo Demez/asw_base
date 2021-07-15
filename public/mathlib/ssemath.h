@@ -65,6 +65,7 @@ typedef __vector4 u32x4; // a VMX register; just a way of making it explicit tha
 typedef __m128 fltx4;
 typedef __m128 i32x4;
 typedef __m128 u32x4;
+typedef fltx4 bi32x4;
 
 #endif
 
@@ -2544,6 +2545,11 @@ FORCEINLINE int TestSignSIMD( const fltx4 & a )								// mask of which floats h
 }
 
 FORCEINLINE bool IsAnyNegative( const fltx4 & a )							// (a.x < 0) || (a.y < 0) || (a.z < 0) || (a.w < 0)
+{
+	return (0 != TestSignSIMD( a ));
+}
+
+FORCEINLINE bool IsAnyTrue( const fltx4 & a )
 {
 	return (0 != TestSignSIMD( a ));
 }

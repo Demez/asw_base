@@ -367,7 +367,7 @@ void CBaseShader::PI_SetModulationPixelShaderDynamicState_LinearColorSpace_Linea
 {
 	Assert( s_bBuildingInstanceCommandBuffer );
 	Vector color2( 1.0f, 1.0f, 1.0f );
-	ApplyColor2Factor( color2.Base() );
+	ApplyColor2Factor( color2.Base(), true );
 	s_InstanceCommandBuffer.SetModulationPixelShaderDynamicState_LinearColorSpace_LinearScale( nRegister, color2, scale );
 }
 
@@ -391,7 +391,7 @@ void CBaseShader::PI_SetModulationPixelShaderDynamicState_LinearColorSpace( int 
 {
 	Assert( s_bBuildingInstanceCommandBuffer );
 	Vector color2( 1.0f, 1.0f, 1.0f );
-	ApplyColor2Factor( color2.Base() );
+	ApplyColor2Factor( color2.Base(), true );
 	s_InstanceCommandBuffer.SetModulationPixelShaderDynamicState_LinearColorSpace( nRegister, color2 );
 }
 
@@ -721,7 +721,7 @@ bool CBaseShader::IsTranslucent( IMaterialVar **params ) const
 //-----------------------------------------------------------------------------
 // Returns the translucency...
 //-----------------------------------------------------------------------------
-void CBaseShader::ApplyColor2Factor( float *pColorOut ) const // (*pColorOut) *= COLOR2
+void CBaseShader::ApplyColor2Factor( float *pColorOut, bool isLinearSpace ) const // (*pColorOut) *= COLOR2
 {
 	if ( !g_pConfig->bShowDiffuse )
 	{
@@ -741,7 +741,7 @@ void CBaseShader::ApplyColor2Factor( float *pColorOut ) const // (*pColorOut) *=
 	}
 	if ( g_pHardwareConfig->UsesSRGBCorrectBlending() )
 	{
-		IMaterialVar* pSRGBVar = s_ppParams[SRGBTINT];
+		/*IMaterialVar* pSRGBVar = s_ppParams[SRGBTINT];
 		if (pSRGBVar->GetType() == MATERIAL_VAR_TYPE_VECTOR)
 		{
 			float flSRGB[3];
@@ -750,6 +750,26 @@ void CBaseShader::ApplyColor2Factor( float *pColorOut ) const // (*pColorOut) *=
 			pColorOut[0] *= flSRGB[0];
 			pColorOut[1] *= flSRGB[1];
 			pColorOut[2] *= flSRGB[2];
+		}*/
+
+		IMaterialVar* pSRGBVar = s_ppParams[SRGBTINT];
+		if (pSRGBVar->GetType() == MATERIAL_VAR_TYPE_VECTOR)
+		{
+			float flSRGB[3];
+			pSRGBVar->GetVecValue( flSRGB, 3 );
+
+			if ( isLinearSpace )
+			{
+				pColorOut[0] *= flSRGB[0];
+				pColorOut[1] *= flSRGB[1];
+				pColorOut[2] *= flSRGB[2];
+			}
+			else
+			{
+				pColorOut[0] *= GammaToLinearFullRange( flSRGB[0] );
+				pColorOut[1] *= GammaToLinearFullRange( flSRGB[1] );
+				pColorOut[2] *= GammaToLinearFullRange( flSRGB[2] );
+			}
 		}
 	}
 }
@@ -980,6 +1000,7 @@ bool CBaseShader::UsingEditor( IMaterialVar **params ) const
 bool CBaseShader::IsHDREnabled( void )
 {
 	// HDRFIXME!  Need to fix this for vgui materials
-	HDRType_t hdr_mode = g_pHardwareConfig->GetHDRType();
-	return ( hdr_mode == HDR_TYPE_INTEGER ) || ( hdr_mode == HDR_TYPE_FLOAT );
+	// HDRType_t hdr_mode = g_pHardwareConfig->GetHDRType();
+	// return ( hdr_mode == HDR_TYPE_INTEGER ) || ( hdr_mode == HDR_TYPE_FLOAT );
+	return false;
 }

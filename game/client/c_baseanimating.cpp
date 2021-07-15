@@ -5356,7 +5356,7 @@ bool C_BaseAnimating::Simulate()
 		Vector muzzlePos;
 		QAngle muzzleAng;
 		Vector muzzleForward, muzzleRight, muzzleUp;
-		if ( GetAttachment( LookupAttachment( "muzzle" ), muzzlePos, muzzleAng ) )
+		if ( LookupAttachment( "muzzle" ) != -1 && GetAttachment( LookupAttachment( "muzzle" ), muzzlePos, muzzleAng ) )
 		{
 			AngleVectors( muzzleAng, &muzzleForward, &muzzleRight, &muzzleUp );
 			m_flashlightMgr->UpdateFlashlight( muzzlePos - muzzleForward * 4, muzzleForward, muzzleRight, muzzleUp, 60, true, 500, 0/*, "effects/flashlight001"*/ );

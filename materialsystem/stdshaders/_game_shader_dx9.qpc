@@ -47,6 +47,11 @@ configuration
 
 files
 {
+	folder "New Shaders"
+	{
+		"pbr_dx9.cpp"
+	}
+	
 	folder "Source Files"
 	{
 		"aftershock.cpp"

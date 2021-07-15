@@ -129,6 +129,10 @@
 #include "missionchooser/iasw_mission_chooser.h"
 #endif
 
+#if PORTAL_SUPPORT
+#include "PortalRender.h"
+#endif
+
 #include "tier1/UtlDict.h"
 #include "keybindinglistener.h"
 
@@ -2358,7 +2362,9 @@ void OnRenderStart()
 	MDLCACHE_CRITICAL_SECTION();
 	MDLCACHE_COARSE_LOCK();
 
-
+#if PORTAL_SUPPORT
+	g_pPortalRender->UpdatePortalPixelVisibility(); //updating this one or two lines before querying again just isn't cutting it. Update as soon as it's cheap to do so.
+#endif
 
 	partition->SuppressLists( PARTITION_ALL_CLIENT_EDICTS, true );
 	C_BaseEntity::SetAbsQueriesValid( false );

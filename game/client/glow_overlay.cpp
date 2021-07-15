@@ -104,7 +104,12 @@ CGlowOverlay::CGlowOverlay()
 		m_Sprites[i].m_pMaterial	= NULL;
 	}
 
-
+#if PORTAL_SUPPORT
+	for( int i = 0; i != MAX_PORTAL_RECURSIVE_VIEWS; ++i )
+	{
+		m_skyObstructionScaleBackups[i] = 1.0f;
+	}
+#endif
 }
 
 
@@ -535,6 +540,40 @@ void CGlowOverlay::UpdateSkyOverlays( float zFar, bool bCacheFullSceneState )
 	}
 }
 
+
+#if PORTAL_SUPPORT
+
+void CGlowOverlay::BackupSkyOverlayData( int iBackupToSlot )
+{
+	unsigned short iNext;
+	for( unsigned short i=g_GlowOverlaySystem.m_GlowOverlays.Head(); i != g_GlowOverlaySystem.m_GlowOverlays.InvalidIndex(); i = iNext )
+	{
+		iNext = g_GlowOverlaySystem.m_GlowOverlays.Next( i );
+		CGlowOverlay *pOverlay = g_GlowOverlaySystem.m_GlowOverlays[i];
+
+		if( !pOverlay->m_bActivated || !pOverlay->m_bDirectional || !pOverlay->m_bInSky )
+			continue;
+
+		pOverlay->m_skyObstructionScaleBackups[iBackupToSlot] = pOverlay->m_skyObstructionScale;
+	}
+}
+
+void CGlowOverlay::RestoreSkyOverlayData( int iRestoreFromSlot )
+{
+	unsigned short iNext;
+	for( unsigned short i=g_GlowOverlaySystem.m_GlowOverlays.Head(); i != g_GlowOverlaySystem.m_GlowOverlays.InvalidIndex(); i = iNext )
+	{
+		iNext = g_GlowOverlaySystem.m_GlowOverlays.Next( i );
+		CGlowOverlay *pOverlay = g_GlowOverlaySystem.m_GlowOverlays[i];
+
+		if( !pOverlay->m_bActivated || !pOverlay->m_bDirectional || !pOverlay->m_bInSky )
+			continue;
+
+		pOverlay->m_skyObstructionScale = pOverlay->m_skyObstructionScaleBackups[iRestoreFromSlot];
+	}
+}
+
+#endif //#ifdef PORTAL
 
 
 

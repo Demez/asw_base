@@ -427,6 +427,8 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+float g_fMaxViewModelLag = 1.5f;
+
 void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& original_angles )
 {
 	Vector vOriginalOrigin = origin;
@@ -436,7 +438,7 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 	Vector	forward;
 	AngleVectors( angles, &forward, NULL, NULL );
 
-	if ( gpGlobals->frametime != 0.0f )
+	if ( g_fMaxViewModelLag > 0.0f && gpGlobals->frametime != 0.0f )
 	{
 		Vector vDifference;
 		VectorSubtract( forward, m_vecLastFacing, vDifference );
@@ -446,9 +448,9 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 		// If we start to lag too far behind, we'll increase the "catch up" speed.  Solves the problem with fast cl_yawspeed, m_yaw or joysticks
 		//  rotating quickly.  The old code would slam lastfacing with origin causing the viewmodel to pop to a new position
 		float flDiff = vDifference.Length();
-		if ( flDiff > 1.5f )
+		if ( (flDiff > g_fMaxViewModelLag) /*&& (g_fMaxViewModelLag > 0.0f)*/ )
 		{
-			float flScale = flDiff / 1.5f;
+			float flScale = flDiff / g_fMaxViewModelLag;
 			flSpeed *= flScale;
 		}
 
@@ -461,7 +463,6 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 		Assert( m_vecLastFacing.IsValid() );
 	}
 
-
 	Vector right, up;
 	AngleVectors( original_angles, &forward, &right, &up );
 
@@ -471,11 +472,16 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 	else if ( pitch < -180.0f )
 		pitch += 360.0f;
 
+	if ( g_fMaxViewModelLag == 0.0f )
+	{
+		origin = vOriginalOrigin;
+		angles = vOriginalAngles;
+	}
+
 	//FIXME: These are the old settings that caused too many exposed polys on some models
 	VectorMA( origin, -pitch * 0.035f,	forward,	origin );
 	VectorMA( origin, -pitch * 0.03f,		right,	origin );
 	VectorMA( origin, -pitch * 0.02f,		up,		origin);
-
 }
 
 //-----------------------------------------------------------------------------

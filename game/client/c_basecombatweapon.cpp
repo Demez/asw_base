@@ -65,10 +65,18 @@ void C_BaseCombatWeapon::NotifyShouldTransmit( ShouldTransmitState_t state )
 
 static inline bool ShouldDrawLocalPlayer( C_BasePlayer *pl )
 {
+#if PORTAL_SUPPORT
+	return true;
+#else
 
+#if VR
+	// if ( g_VR.active )
+	//	return true;
+#endif
 	Assert( pl );
 	return pl->ShouldDrawLocalPlayer();
 
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -320,7 +328,7 @@ bool C_BaseCombatWeapon::GetShootPosition( Vector &vOrigin, QAngle &vAngles )
 	if ( C_BasePlayer::IsLocalPlayer( pEnt ) )
 	{
 		ACTIVE_SPLITSCREEN_PLAYER_GUARD_ENT( pEnt );
-		bUseViewModel = !player->ShouldDrawLocalPlayer();
+		bUseViewModel = !ShouldDrawLocalPlayer(player);
 	}
 
 	QAngle vDummy;
@@ -383,7 +391,7 @@ bool C_BaseCombatWeapon::ShouldDraw( void )
 			return false;
 
 		// 3rd person mode
-		if ( pLocalPlayer->ShouldDrawLocalPlayer() )
+		if ( ShouldDrawLocalPlayer(pLocalPlayer) )
 			return true;
 
 		// don't draw active weapon if not in some kind of 3rd person mode, the viewmodel will do that
@@ -486,7 +494,7 @@ void C_BaseCombatWeapon::EnsureCorrectRenderingModel()
 	C_BasePlayer *localplayer = C_BasePlayer::GetLocalPlayer();
 	if ( localplayer && 
 		localplayer == GetOwner() &&
-		!localplayer->ShouldDrawLocalPlayer() )
+		ShouldDrawLocalPlayer(localplayer) )
 	{
 		return;
 	}

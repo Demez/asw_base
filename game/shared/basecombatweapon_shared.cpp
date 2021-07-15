@@ -961,12 +961,24 @@ void CBaseCombatWeapon::Equip( CBaseCombatCharacter *pOwner )
 }
 
 void CBaseCombatWeapon::SetActivity( Activity act, float duration ) 
-{ 
+{
+	// DEMEZ iirc this broke something
+	//Adrian: Oh man...
+#if !defined( CLIENT_DLL ) && defined( PORTAL )
+	SetModel( GetWorldModel() );
+#endif
+
 	int sequence = SelectWeightedSequence( act ); 
 	
 	// FORCE IDLE on sequences we don't have (which should be many)
 	if ( sequence == ACTIVITY_NOT_AVAILABLE )
 		sequence = SelectWeightedSequence( ACT_VM_IDLE );
+
+	// DEMEZ iirc this broke something
+#if !defined( CLIENT_DLL ) && defined( PORTAL )
+	if ( GetOwner()->IsPlayer() )
+		SetModel( GetViewModel() );
+#endif
 
 	if ( sequence != ACTIVITY_NOT_AVAILABLE )
 	{

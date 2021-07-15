@@ -2358,8 +2358,9 @@ void CFuncTrackTrain::Find( void )
 		return;
 
 	if ( !FClassnameIs( m_ppath, "path_track" ) 
-		 && !FClassnameIs( m_ppath, "env_portal_path_track" )
-
+#ifndef PORTAL_DLL	//env_portal_path_track is a child of path_track and would like to get found
+		&& !FClassnameIs( m_ppath, "env_portal_path_track" )
+#endif //#ifndef PORTAL
 		)
 	{
 		Warning( "func_track_train must be on a path of path_track\n" );

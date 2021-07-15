@@ -181,7 +181,7 @@ protected:
 	// try nudging slightly on all axis to
 	// allow for the cut precision of the net coordinates
 
-	int				CheckStuck( void );
+	virtual int		CheckStuck( void );
 	
 	// Check if the point is in water.
 	// Sets refWaterLevel and refWaterType appropriately.

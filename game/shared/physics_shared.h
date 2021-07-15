@@ -24,6 +24,10 @@ extern IPhysics				*physics;
 extern IPhysicsCollision	*physcollision;
 extern IPhysicsEnvironment	*physenv;
 
+#ifdef PORTAL_DLL
+extern IPhysicsEnvironment	*physenv_main;
+#endif
+
 extern IPhysicsSurfaceProps *physprops;
 extern IPhysicsObjectPairHash *g_EntityCollisionHash;
 

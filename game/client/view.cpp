@@ -57,7 +57,9 @@
 #define USE_MONITORS
 #endif
 
-
+#ifdef PORTAL_DLL
+#include "C_Prop_Portal.h" //portal surface rendering functions
+#endif
 
 	
 // memdbgon must be the last include file in a .cpp file!!!

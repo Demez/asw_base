@@ -46,6 +46,7 @@ extern ConVar cl_pitchdown;
 extern ConVar cl_pitchup;
 extern const ConVar *sv_cheats;
 
+bool g_bUpsideDown = false; // Set when the player is upside down in Portal to invert the mouse.
 
 
 
@@ -427,29 +428,33 @@ void CInput::ApplyMouse( int nSlot, QAngle& viewangles, CUserCmd *cmd, float mou
 	//roll the view angles so roll is 0 (the HL2 assumed state) and mouse adjustments are relative to the screen.
 	//Assuming roll is unchanging, we want mouse left to translate to screen left at all times (same for right, up, and down)
 	
-
-
 	if ( !((in_strafe.GetPerUser( nSlot ).state & 1) || lookstrafe.GetInt()) )
 	{
-		if ( CAM_IsThirdPerson() && thirdperson_platformer.GetInt() )
+		if ( g_bUpsideDown )
 		{
-			if ( mouse_x )
-			{
-				// use the mouse to orbit the camera around the player, and update the idealAngle
-				user.m_vecCameraOffset[ YAW ] -= m_yaw.GetFloat() * mouse_x;
-				cam_idealyaw.SetValue( user.m_vecCameraOffset[ YAW ] - viewangles[ YAW ] );
-
-				// why doesn't this work??? CInput::AdjustYaw is why
-				//cam_idealyaw.SetValue( cam_idealyaw.GetFloat() - m_yaw.GetFloat() * mouse_x );
-			}
+			viewangles[ YAW ] += m_yaw.GetFloat() * mouse_x;
 		}
 		else
 		{
-			// Otherwize, use mouse to spin around vertical axis
-
-
+			if ( CAM_IsThirdPerson() && thirdperson_platformer.GetInt() )
 			{
-				viewangles[YAW] -= m_yaw.GetFloat() * mouse_x;
+				if ( mouse_x )
+				{
+					// use the mouse to orbit the camera around the player, and update the idealAngle
+					user.m_vecCameraOffset[ YAW ] -= m_yaw.GetFloat() * mouse_x;
+					cam_idealyaw.SetValue( user.m_vecCameraOffset[ YAW ] - viewangles[ YAW ] );
+
+					// why doesn't this work??? CInput::AdjustYaw is why
+					//cam_idealyaw.SetValue( cam_idealyaw.GetFloat() - m_yaw.GetFloat() * mouse_x );
+				}
+			}
+			else
+			{
+				// Otherwize, use mouse to spin around vertical axis
+
+				{
+					viewangles[YAW] -= m_yaw.GetFloat() * mouse_x;
+				}
 			}
 		}
 	}
@@ -464,7 +469,11 @@ void CInput::ApplyMouse( int nSlot, QAngle& viewangles, CUserCmd *cmd, float mou
 	//  to adjust view pitch.
 	if (!(in_strafe.GetPerUser( nSlot ).state & 1))
 	{
-		if ( CAM_IsThirdPerson() && thirdperson_platformer.GetInt() )
+		if ( g_bUpsideDown )
+		{
+			viewangles[PITCH] -= m_pitch->GetFloat() * mouse_y;
+		}
+		else if ( CAM_IsThirdPerson() && thirdperson_platformer.GetInt() )
 		{
 			if ( mouse_y )
 			{
@@ -478,7 +487,6 @@ void CInput::ApplyMouse( int nSlot, QAngle& viewangles, CUserCmd *cmd, float mou
 		}
 		else
 		{
-
 			{
 				viewangles[PITCH] += m_pitch->GetFloat() * mouse_y;
 			}

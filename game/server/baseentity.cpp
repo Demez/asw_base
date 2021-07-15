@@ -8264,8 +8264,23 @@ HSCRIPT CBaseEntity::GetScriptInstance()
 		}
 
 		m_hScriptInstance = g_pScriptVM->RegisterInstance( GetScriptDesc(), this );
-		g_pScriptVM->SetInstanceUniqeId( m_hScriptInstance, STRING(m_iszScriptId) );
+
+		if ( m_hScriptInstance == NULL )
+		{
+			Warning("Script Instance not registered for %s\n", m_iszScriptId);
+			return NULL;
+		}
+		else
+		{
+			g_pScriptVM->SetInstanceUniqeId( m_hScriptInstance, STRING(m_iszScriptId) );
+		}
 	}
+
+	if ( this == NULL )
+	{
+		Msg("WHAT\n");
+	}
+
 	return m_hScriptInstance;
 }
 

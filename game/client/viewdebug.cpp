@@ -16,6 +16,10 @@
 #include "materialsystem/imaterialvar.h"
 #include "foundryhelpers_client.h"
 
+#ifdef PORTAL_DLL
+#include "portal_render_targets.h"
+#include "portalrender.h"
+#endif
 
 
 // NOTE: This has to be the last file included!
@@ -590,8 +594,11 @@ void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &view )
 		float w = mat_wateroverlaysize.GetFloat();
 		float h = mat_wateroverlaysize.GetFloat();
 
+#ifdef PORTAL_DLL
+		g_pPortalRender->OverlayPortalRenderTargets( w, h );
+#else
 		OverlayCameraRenderTarget( "debug/debugcamerarendertarget", 0, 0, w, h );
-
+#endif
 	}
 
 	if ( mat_showframebuffertexture.GetBool() )

@@ -850,7 +850,7 @@ void CInput::ClampAngles( QAngle& viewangles )
 		viewangles[PITCH] = -cl_pitchup.GetFloat();
 	}
 
-
+#if !PORTAL_SUPPORT // Don't constrain Roll in Portal because the player can be upside down! -Jeep
 	if ( viewangles[ROLL] > 50 )
 	{
 		viewangles[ROLL] = 50;
@@ -859,6 +859,7 @@ void CInput::ClampAngles( QAngle& viewangles )
 	{
 		viewangles[ROLL] = -50;
 	}
+#endif
 
 }
 

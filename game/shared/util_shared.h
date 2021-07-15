@@ -22,7 +22,7 @@
 #include "cdll_client_int.h"
 #endif
 
-#ifdef PORTAL
+#ifdef PORTAL_DLL
 #include "portal_util_shared.h"
 #endif
 

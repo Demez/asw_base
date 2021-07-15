@@ -118,7 +118,10 @@ public:
 
 	float			m_flHDRColorScale;
 
-
+#if PORTAL_SUPPORT
+	bool m_bDrawInMainRender;
+	bool m_bDrawInPortalRender;
+#endif //#ifdef PORTAL
 };
 
 

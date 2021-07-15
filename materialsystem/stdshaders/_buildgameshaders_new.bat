@@ -81,7 +81,7 @@ set ARG_EXTRA=
 @REM %BUILD_SHADER% stdshader_dx9_20b_new		-game %GAMEDIR% -source %SOURCEDIR% %dynamic_shaders% -dx9_30
 @REM %BUILD_SHADER% stdshader_dx9_30		-game %GAMEDIR% -source %SOURCEDIR% %dynamic_shaders% -dx9_30
 
-@REM %BUILD_SHADER% _stdshader_dx9_20b_new		-game %GAMEDIR% -source %SOURCEDIR% %dynamic_shaders%
+%BUILD_SHADER% _stdshader_dx9_20b_new		-game %GAMEDIR% -source %SOURCEDIR% %dynamic_shaders%
 %BUILD_SHADER% _stdshader_dx9_30_new		-game %GAMEDIR% -source %SOURCEDIR% %dynamic_shaders% -dx9_30	-force30
 
 

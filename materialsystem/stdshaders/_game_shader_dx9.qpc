@@ -50,6 +50,11 @@ files
 	folder "New Shaders"
 	{
 		"pbr_dx9.cpp"
+		
+		"portal.cpp"
+		"portal_refract.cpp"
+		"portal_refract_helper.cpp"
+		"portalstaticoverlay.cpp"
 	}
 	
 	folder "Source Files"

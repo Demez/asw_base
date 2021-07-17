@@ -1790,8 +1790,6 @@ struct virtualmodel_t
 	virtualgroup_t *pSeqGroup( int sequence ) { return &m_group[ m_seq[ sequence ].group ]; }; // Note: user must manage mutex for this
 
     CThreadFastMutex m_Lock;
-	
-	int m_origVersion = STUDIO_VERSION;
 
 	CUtlVector< virtualsequence_t > m_seq;
 	CUtlVector< virtualgeneric_t > m_anim;
@@ -2392,7 +2390,7 @@ struct studiohdr_t
 	virtualmodel_t		*GetVirtualModel( void ) const;
 
 	// DEMEZ STUDIO
-	inline int			GetOriginalVersion( void ) { return GetVirtualModel() ? GetVirtualModel()->m_origVersion : STUDIO_VERSION; }
+	// inline int			GetOriginalVersion( void ) { return GetVirtualModel() ? GetVirtualModel()->m_origVersion : STUDIO_VERSION; }
 
 	// for demand loaded animation blocks
 	int					szanimblocknameindex;	
@@ -3208,10 +3206,10 @@ inline bool Studio_ConvertStudioHdrToNewVersion( studiohdr_t *pStudioHdr )
 	pStudioHdr->version = STUDIO_VERSION;
 
 	// DEMEZ STUDIO: just kinda store it here
-	if ( pStudioHdr->GetVirtualModel() )
+	/*if ( pStudioHdr->GetVirtualModel() )
 	{
 		pStudioHdr->GetVirtualModel()->m_origVersion = version;
-	}
+	}*/
 
 	return bResult;
 }

@@ -66,7 +66,7 @@ void C_BaseCombatWeapon::NotifyShouldTransmit( ShouldTransmitState_t state )
 static inline bool ShouldDrawLocalPlayer( C_BasePlayer *pl )
 {
 #if PORTAL_SUPPORT
-	return true;
+	return false;  // true;
 #else
 
 #if VR
@@ -491,6 +491,7 @@ int C_BaseCombatWeapon::DrawModel( int flags, const RenderableInstance_t &instan
 // Otherwise, if we're not the local player, always use the world model
 void C_BaseCombatWeapon::EnsureCorrectRenderingModel()
 {
+#ifndef PORTAL_DLL
 	C_BasePlayer *localplayer = C_BasePlayer::GetLocalPlayer();
 	if ( localplayer && 
 		localplayer == GetOwner() &&
@@ -498,6 +499,7 @@ void C_BaseCombatWeapon::EnsureCorrectRenderingModel()
 	{
 		return;
 	}
+#endif
 
 	// BRJ 10/14/02
 	// FIXME: Remove when Yahn's client-side prediction is done

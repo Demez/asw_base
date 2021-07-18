@@ -4183,6 +4183,7 @@ static void DrawClippedDepthBox( IClientRenderable *pEnt, float *pClipPlane )
 
 static inline bool BlurTest( IClientRenderable *pRenderable, int drawFlags, bool bPreDraw, const RenderableInstance_t &instance )
 {
+#ifndef PORTAL_DLL
 	if( CurrentViewID() == VIEW_MONITOR )
 		return false;
 
@@ -4208,6 +4209,9 @@ static inline bool BlurTest( IClientRenderable *pRenderable, int drawFlags, bool
 	}
 
 	return false;
+#else
+	return false;
+#endif
 }
 
 
@@ -4617,65 +4621,6 @@ void CRendering3dView::DrawTranslucentRenderablesNoWorld( bool bInSkybox )
 	if ( !m_pMainView->ShouldDrawEntities() || !r_drawtranslucentrenderables.GetBool() )
 		return;
 
-// DEMEZ PORTAL: modify this
-#ifdef PORTAL_DLL //if we're in the portal mod, we need to make a detour so we can render portal views using stencil areas
-	if( ShouldDrawPortals() ) //no recursive stencil views during skybox rendering (although we might be drawing a skybox while already in a recursive stencil view)
-	{
-		int iDrawFlagsBackup = m_DrawFlags;
-
-		if( g_pPortalRender->DrawPortalsUsingStencils( (CViewRender *)m_pMainView ) )// @MULTICORE (toml 8/10/2006): remove this hack cast
-		{
-			m_DrawFlags = iDrawFlagsBackup;
-
-			//reset visibility
-			unsigned int iVisFlags = 0;
-			m_pMainView->SetupVis( *this, iVisFlags, m_pCustomVisibility );		
-
-			//recreate drawlists (since I can't find an easy way to backup the originals)
-			{
-				SafeRelease( m_pWorldRenderList );
-				SafeRelease( m_pWorldListInfo );
-				BuildWorldRenderLists( ((m_DrawFlags & DF_DRAW_ENTITITES) != 0), m_pCustomVisibility ? m_pCustomVisibility->m_iForceViewLeaf : -1, false );
-
-				AssertMsg( m_DrawFlags & DF_DRAW_ENTITITES, "It shouldn't be possible to get here if this wasn't set, needs special case investigation" );
-				// DEMEZ PORTAL: wtf ????????????????
-				/*for( int i = m_pRenderablesList->m_RenderGroupCounts[RENDER_GROUP_TRANSLUCENT]; --i >= 0; )
-				{
-					m_pRenderablesList->m_RenderGroups[RENDER_GROUP_TRANSLUCENT][i].m_pRenderable->ComputeFxBlend();
-				}*/
-			}
-
-			if( r_depthoverlay.GetBool() )
-			{
-				CMatRenderContextPtr pRenderContext( materials );
-				ITexture *pDepthTex = GetFullFrameDepthTexture();
-
-				IMaterial *pMaterial = materials->FindMaterial( "debug/showz", TEXTURE_GROUP_OTHER, true );
-				IMaterialVar *BaseTextureVar = pMaterial->FindVar( "$basetexture", NULL, false );
-				IMaterialVar *pDepthInAlpha = NULL;
-				if( IsPC() )
-				{
-					pDepthInAlpha = pMaterial->FindVar( "$ALPHADEPTH", NULL, false );
-					pDepthInAlpha->SetIntValue( 1 );
-				}
-
-				BaseTextureVar->SetTextureValue( pDepthTex );
-
-				pRenderContext->OverrideDepthEnable( true, false ); //don't write to depth, or else we'll never see translucents
-				pRenderContext->DrawScreenSpaceQuad( pMaterial );
-				pRenderContext->OverrideDepthEnable( false, true );
-			}
-		}
-		else
-		{
-			//done recursing in, time to go back out and do translucents
-			CMatRenderContextPtr pRenderContext( materials );		
-
-			UpdateFullScreenDepthTexture();
-		}
-	}
-#endif  // #else
-
 	// Draw the particle singletons.
 	DrawParticleSingletons( bInSkybox );
 
@@ -4801,7 +4746,66 @@ void CRendering3dView::DrawTranslucentRenderables( bool bInSkybox, bool bShadowD
 {
 	const ClientWorldListInfo_t& info = *m_pWorldListInfo;
 
+#ifdef PORTAL_DLL //if we're in the portal mod, we need to make a detour so we can render portal views using stencil areas
+	if( ShouldDrawPortals() ) //no recursive stencil views during skybox rendering (although we might be drawing a skybox while already in a recursive stencil view)
+	{
+		int iDrawFlagsBackup = m_DrawFlags;
 
+		if( g_pPortalRender->DrawPortalsUsingStencils( (CViewRender *)m_pMainView ) )// @MULTICORE (toml 8/10/2006): remove this hack cast
+		{
+			m_DrawFlags = iDrawFlagsBackup;
+
+			//reset visibility
+			unsigned int iVisFlags = 0;
+			m_pMainView->SetupVis( *this, iVisFlags, m_pCustomVisibility );		
+
+			//recreate drawlists (since I can't find an easy way to backup the originals)
+			{
+				SafeRelease( m_pWorldRenderList );
+				SafeRelease( m_pWorldListInfo );
+				BuildWorldRenderLists( ((m_DrawFlags & DF_DRAW_ENTITITES) != 0), m_pCustomVisibility ? m_pCustomVisibility->m_iForceViewLeaf : -1, false );
+
+				AssertMsg( m_DrawFlags & DF_DRAW_ENTITITES, "It shouldn't be possible to get here if this wasn't set, needs special case investigation" );
+				// DEMEZ PORTAL: wtf ????????????????
+				/*for( int i = m_pRenderablesList->m_RenderGroupCounts[RENDER_GROUP_TRANSLUCENT]; --i >= 0; )
+				{
+					m_pRenderablesList->m_RenderGroups[RENDER_GROUP_TRANSLUCENT][i].m_pRenderable->ComputeFxBlend();
+				}*/
+				BuildRenderableRenderLists(CurrentViewID());
+			}
+
+			if( r_depthoverlay.GetBool() )
+			{
+				CMatRenderContextPtr pRenderContext( materials );
+				ITexture *pDepthTex = GetFullFrameDepthTexture();
+
+				IMaterial *pMaterial = materials->FindMaterial( "debug/showz", TEXTURE_GROUP_OTHER, true );
+				pMaterial->IncrementReferenceCount();
+				IMaterialVar *BaseTextureVar = pMaterial->FindVar( "$basetexture", NULL, false );
+				IMaterialVar *pDepthInAlpha = NULL;
+				if( IsPC() )
+				{
+					pDepthInAlpha = pMaterial->FindVar( "$ALPHADEPTH", NULL, false );
+					pDepthInAlpha->SetIntValue( 1 );
+				}
+
+				BaseTextureVar->SetTextureValue( pDepthTex );
+
+				pRenderContext->OverrideDepthEnable( true, false ); //don't write to depth, or else we'll never see translucents
+				pRenderContext->DrawScreenSpaceQuad( pMaterial );
+				pRenderContext->OverrideDepthEnable( false, true );
+				pMaterial->DecrementReferenceCount();
+			}
+		}
+		else
+		{
+			//done recursing in, time to go back out and do translucents
+			CMatRenderContextPtr pRenderContext( materials );		
+
+			UpdateFullScreenDepthTexture();
+		}
+	}
+#else
 	{
 		//opaques generally write depth, and translucents generally don't.
 		//So immediately after opaques are done is the best time to snap off the depth buffer to a texture.
@@ -4820,9 +4824,7 @@ void CRendering3dView::DrawTranslucentRenderables( bool bInSkybox, bool bShadowD
 			break;
 		}
 	}
-
-
-	
+#endif
 
 	// FIXME: Add support for deferred shadows in 3D skybox
 	if ( r_shadow_deferred.GetBool() && bInSkybox == false )

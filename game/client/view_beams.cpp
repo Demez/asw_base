@@ -429,7 +429,13 @@ extern ConVar r_drawviewmodel;
 
 int Beam_t::DrawModel( int flags, const RenderableInstance_t &instance )
 {
-
+#if 0 // def PORTAL_DLL
+	if ((!g_pPortalRender->IsRenderingPortal() && !m_bDrawInMainRender) ||
+		(g_pPortalRender->IsRenderingPortal() && !m_bDrawInPortalRender))
+	{
+		return 0;
+	}
+#endif //#ifdef PORTAL
 
 	// Tracker 16432:  If rendering a savegame screenshot don't draw beams 
 	//   who have viewmodels as their attached entity

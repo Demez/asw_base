@@ -6096,7 +6096,10 @@ void C_BaseEntity::AddToEntityList( entity_list_ids_t listId )
 
 void C_BaseEntity::RemoveFromEntityList( entity_list_ids_t listId )
 {
+#ifndef PORTAL
 	Assert( s_nSuppressChanges != listId );
+#endif
+
 	Assert( listId < NUM_ENTITY_LISTS );
 	if ( m_ListEntry[listId] != 0xFFFF )
 	{

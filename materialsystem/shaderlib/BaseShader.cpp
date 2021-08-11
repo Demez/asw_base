@@ -741,7 +741,7 @@ void CBaseShader::ApplyColor2Factor( float *pColorOut, bool isLinearSpace ) cons
 	}
 	if ( g_pHardwareConfig->UsesSRGBCorrectBlending() )
 	{
-		/*IMaterialVar* pSRGBVar = s_ppParams[SRGBTINT];
+		IMaterialVar* pSRGBVar = s_ppParams[SRGBTINT];
 		if (pSRGBVar->GetType() == MATERIAL_VAR_TYPE_VECTOR)
 		{
 			float flSRGB[3];
@@ -750,9 +750,9 @@ void CBaseShader::ApplyColor2Factor( float *pColorOut, bool isLinearSpace ) cons
 			pColorOut[0] *= flSRGB[0];
 			pColorOut[1] *= flSRGB[1];
 			pColorOut[2] *= flSRGB[2];
-		}*/
+		}
 
-		IMaterialVar* pSRGBVar = s_ppParams[SRGBTINT];
+		/*IMaterialVar* pSRGBVar = s_ppParams[SRGBTINT];
 		if (pSRGBVar->GetType() == MATERIAL_VAR_TYPE_VECTOR)
 		{
 			float flSRGB[3];
@@ -770,7 +770,7 @@ void CBaseShader::ApplyColor2Factor( float *pColorOut, bool isLinearSpace ) cons
 				pColorOut[1] *= GammaToLinearFullRange( flSRGB[1] );
 				pColorOut[2] *= GammaToLinearFullRange( flSRGB[2] );
 			}
-		}
+		}*/
 	}
 }
 
@@ -999,8 +999,12 @@ bool CBaseShader::UsingEditor( IMaterialVar **params ) const
 
 bool CBaseShader::IsHDREnabled( void )
 {
+	// DEMEZ SHADER: commenting this out fixes the ui with the custom shaderapi? wtf
+	static bool hack = CommandLine()->FindParm( "-vrapi_hdr" );
+	if ( hack )
+	 	return false;
+
 	// HDRFIXME!  Need to fix this for vgui materials
-	// HDRType_t hdr_mode = g_pHardwareConfig->GetHDRType();
-	// return ( hdr_mode == HDR_TYPE_INTEGER ) || ( hdr_mode == HDR_TYPE_FLOAT );
-	return false;
+	HDRType_t hdr_mode = g_pHardwareConfig->GetHDRType();
+	return ( hdr_mode == HDR_TYPE_INTEGER ) || ( hdr_mode == HDR_TYPE_FLOAT );
 }

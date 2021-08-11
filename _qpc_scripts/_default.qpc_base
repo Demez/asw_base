@@ -9,14 +9,25 @@ configurations
 	"Release"
 }
 
-
 project "client"                    "game/client/client_swarm.qpc" [$SWARM]
 project "server"                    "game/server/server_swarm.qpc" [$SWARM]
 project "missionchooser"	        "game/missionchooser/missionchooser_swarm.qpc" [$SWARM]
+
 project "shaderlib"                 "materialsystem/shaderlib/shaderlib.qpc"
 project "game_shader"               "materialsystem/stdshaders/_game_shader_dx9.qpc"
-project "shaderapidx9"              "materialsystem/shaderapidx9/shaderapidx9.qpc"
 project "responserules_runtime"     "responserules/runtime/responserules_runtime.qpc"
+project "vaudio_opus"               "engine/voice_codecs/vaudio_opus/vaudio_opus.qpc"
+
+// funny
+project "filesystem"                "filesystem/filesystem_stdio.qpc"	// for vpk2 and wildcard support (could put wildcard support in launcher now, but meh)
+project "studiorender"              "studiorender/studiorender.qpc"		// for raised model rendering limit
+project "datacache"                 "datacache/datacache.qpc"
+project "inputsystem"               "inputsystem/inputsystem.qpc" 		// for raw mouse input
+project "launcher"                  "launcher/launcher.qpc"  			// for multiple instances of source
+project "appframework"              "appframework/appframework.qpc"		// for launcher
+
+// only here for dynamic shader compilation really now, was for vr/d3d9ex, but now dxvk can do that
+project "shaderapidx9"              "materialsystem/shaderapidx9/shaderapidx9.qpc"
 
 
 group "gamedlls"
@@ -32,6 +43,16 @@ group "shaders"
 	"shaderapidx9"
 }
 
+group "extra_stuff"
+{
+	"filesystem"
+	"studiorender"
+	"datacache"
+	
+	"launcher"
+	"appframework"
+}
+
 group "everything"
 {
 	folder "Game Binaries"
@@ -43,5 +64,6 @@ group "everything"
 	"responserules_runtime"
 	
 	contains "shaders"
+	contains "extra_stuff"
 }
 

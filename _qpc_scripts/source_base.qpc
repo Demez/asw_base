@@ -47,6 +47,7 @@ configuration
 			"MEMOVERRIDE_MODULE=$PROJECT_NAME"
 			
 			"_BIN_EXT=$_BIN_EXT"
+			"_DLL_EXT=$_BIN_EXT"
 			"DLLNAME=$OUT_BIN_NAME"
 			
 			"STAGING_ONLY" [$STAGING_ONLY]

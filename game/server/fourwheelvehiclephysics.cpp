@@ -358,6 +358,8 @@ void CFourWheelVehiclePhysics::Spawn( )
 {
 	Assert( m_pOuter );
 
+	Precache();
+
 	m_actionValue = 0;
 	m_actionSpeed = 0;
 
@@ -731,7 +733,7 @@ bool CFourWheelVehiclePhysics::Think()
 	m_pVehicle->Update( gpGlobals->frametime, m_controls);
 
 	// boost sounds
-	if( IsBoosting() && !m_bLastBoost )
+ 	if( IsBoosting() && !m_bLastBoost )
 	{
 		m_bLastBoost = true;
 		m_turboTimer = gpGlobals->curtime + 2.75f;		// min duration for turbo sound

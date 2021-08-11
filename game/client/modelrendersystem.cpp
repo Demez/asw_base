@@ -1154,7 +1154,8 @@ void CModelRenderSystem::SetupFlashlightsAndDecals( StudioModelArrayInfo2_t *pIn
 
 	if ( nTotalModelCount != nInstCount )
 	{
-		DevWarning( "CModelRenderSystem::SetupFlashlightsAndDecals sorted model list count incorrect! A model was probably unable to load!" );
+		// shut the fuck up and stop crashing vgui shit !!!
+		// DevWarning( "CModelRenderSystem::SetupFlashlightsAndDecals sorted model list count incorrect! A model was probably unable to load!\n" );
 		nTotalModelCount = nInstCount;
 	}
 

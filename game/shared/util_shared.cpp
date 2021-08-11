@@ -227,13 +227,26 @@ bool PassServerEntityFilter( const IHandleEntity *pTouch, const IHandleEntity *p
 //-----------------------------------------------------------------------------
 bool StandardFilterRules( IHandleEntity *pHandleEntity, int fContentsMask )
 {
+	// DEMEZ: wtf
+	if ( pHandleEntity == NULL )
+		return false;
+
 	CBaseEntity *pCollide = EntityFromEntityHandle( pHandleEntity );
 
 	// Static prop case...
 	if ( !pCollide )
 		return true;
 
+	// DEMEZ: wtf
+	if ( pHandleEntity == NULL )
+		return false;
+
 	SolidType_t solid = pCollide->GetSolid();
+
+	// DEMEZ: wtf
+	if ( pHandleEntity == NULL )
+		return false;
+
 	const model_t *pModel = pCollide->GetModel();
 
 	if ( ( modelinfo->GetModelType( pModel ) != mod_brush ) || (solid != SOLID_BSP && solid != SOLID_VPHYSICS) )

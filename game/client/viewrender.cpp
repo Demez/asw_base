@@ -4911,6 +4911,7 @@ void CRendering3dView::DrawTranslucentRenderables( bool bInSkybox, bool bShadowD
 			// Draw all the translucent entities with this leaf.
 			int nLeaf = info.m_pLeafDataList[iThisLeaf].leafIndex;
 
+			// DEMEZ: portal rendering sometimes crashes here because m_pMainView is NULL ????? checking it for null just crashes it too
 			bool bDrawDetailProps = ClientLeafSystem()->ShouldDrawDetailObjectsInLeaf( nLeaf, m_pMainView->BuildWorldListsNumber() );
 			if ( bDrawDetailProps )
 			{

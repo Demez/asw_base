@@ -26,13 +26,14 @@ struct DistanceFadeInfo_t;
 //-----------------------------------------------------------------------------
 // Info used when building lists of detail objects to render
 //-----------------------------------------------------------------------------
-struct DetailRenderableInfo_t
+// VR HACK
+/*struct DetailRenderableInfo_t
 {
 	IClientRenderable *m_pRenderable;
 	int m_nLeafIndex;
 	RenderGroup_t m_nRenderGroup;
 	RenderableInstance_t m_InstanceData;
-};
+};*/
 
 
 typedef CUtlVectorFixedGrowable< DetailRenderableInfo_t, 2048 > DetailRenderableList_t;

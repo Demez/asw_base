@@ -269,6 +269,9 @@ protected:
 	int m_DrawFlags;
 	int m_ClearFlags;
 
+	// VR TESTING: will be set on the first eye drawn, and then used for the next eye on the same frame
+	CachedRenderInfo_t* m_renderInfo = NULL;
+
 	IWorldRenderList *m_pWorldRenderList;
 	CClientRenderablesList *m_pRenderablesList;
 	ClientWorldListInfo_t *m_pWorldListInfo;
@@ -305,6 +308,125 @@ public:
 	void AddView( CRendering3dView *pView );
 	void Execute() {}
 };
+
+
+//=============================================================================
+// VR: stuff moved here from in viewrender.cpp
+//=============================================================================
+
+
+//-----------------------------------------------------------------------------
+// Describes a pruned set of leaves to be rendered this view. Reference counted
+// because potentially shared by a number of views
+//-----------------------------------------------------------------------------
+struct ClientWorldListInfo_t : public CRefCounted1<WorldListInfo_t>
+{
+	ClientWorldListInfo_t();
+
+	// Allocate a list intended for pruning
+	static ClientWorldListInfo_t *AllocPooled( const ClientWorldListInfo_t &exemplar );
+
+	// Because we remap leaves to eliminate unused leaves, we need a remap
+	// when drawing translucent surfaces, which requires the *original* leaf index
+	// using m_pOriginalLeafIndex[ remapped leaf index ] == actual leaf index
+	uint16 *m_pOriginalLeafIndex;
+
+private:
+	virtual bool OnFinalRelease();
+
+	bool m_bPooledAlloc;
+	static CObjectPool<ClientWorldListInfo_t> gm_Pool;
+};
+
+class CWorldListCache
+{
+public:
+	CWorldListCache();
+
+	void Flush();
+	bool Find( const CViewSetup &viewSetup, IWorldRenderList **ppList, ClientWorldListInfo_t **ppListInfo );
+	void Add( const CViewSetup &viewSetup, IWorldRenderList *pList, ClientWorldListInfo_t *pListInfo );
+
+private:
+	struct Entry_t
+	{
+		Entry_t( const CViewSetup &viewSetup, IWorldRenderList *pList = NULL, ClientWorldListInfo_t *pListInfo = NULL );
+		~Entry_t();
+
+		// The fields from CViewSetup that would actually affect the list
+		float	m_OrthoLeft;		
+		float	m_OrthoTop;
+		float	m_OrthoRight;
+		float	m_OrthoBottom;
+		float	fov;				
+		Vector	origin;					
+		QAngle	angles;				
+		float	zNear;			
+		float	zFar;			
+		float	m_flAspectRatio;
+		float	m_flOffCenterTop;
+		float	m_flOffCenterBottom;
+		float	m_flOffCenterLeft;
+		float	m_flOffCenterRight;
+		bool	m_bOrtho;			
+		bool	m_bOffCenter;
+
+		IWorldRenderList *pList;
+		ClientWorldListInfo_t *pListInfo;
+	};
+
+	class CEntryComparator
+	{
+	public:
+		CEntryComparator( int ) {}
+		bool operator!() const { return false; }
+		bool operator()( const Entry_t *lhs, const Entry_t *rhs ) const 
+		{ 
+			return ( memcmp( lhs, rhs, sizeof(Entry_t) - ( sizeof(Entry_t) - offsetof(Entry_t, pList ) ) ) < 0 );
+		}
+	};
+
+	CUtlRBTree<Entry_t *, unsigned short, CEntryComparator> m_Entries;
+};
+
+extern CWorldListCache g_WorldListCache;
+
+
+//-----------------------------------------------------------------------------
+// Standard 3d skybox view
+//-----------------------------------------------------------------------------
+class CSkyboxView : public CRendering3dView
+{
+	DECLARE_CLASS( CSkyboxView, CRendering3dView );
+public:
+	CSkyboxView(CViewRender *pMainView);
+
+	bool			Setup( const CViewSetup &view, int *pClearFlags, SkyboxVisibility_t *pSkyboxVisible );
+	void			Draw();
+
+protected:
+
+#if PORTAL_SUPPORT
+	virtual bool ShouldDrawPortals() { return false; }
+#endif
+
+	virtual SkyboxVisibility_t	ComputeSkyboxVisibility();
+
+	bool			GetSkyboxFogEnable();
+
+	void			Enable3dSkyboxFog( void );
+	void			DrawInternal( view_id_t iSkyBoxViewID = VIEW_3DSKY, bool bInvokePreAndPostRender = true, ITexture *pRenderTarget = NULL );
+
+	sky3dparams_t *	PreRender3dSkyboxWorld( SkyboxVisibility_t nSkyboxVisible );
+
+	sky3dparams_t *m_pSky3dParams;
+};
+
+
+//=============================================================================
+// VR: move end
+//=============================================================================
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Implements the interface to view rendering for the client .dll

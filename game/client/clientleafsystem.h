@@ -198,6 +198,11 @@ public:
 #define N_CLSUBSYSTEMS 1
 
 
+struct DetailRenderableInfo_t;
+class IClientRenderable;
+class CClientAlphaProperty;
+struct CachedRenderInfo_t;
+
 
 //-----------------------------------------------------------------------------
 // The client leaf system
@@ -205,6 +210,37 @@ public:
 abstract_class IClientLeafSystem : public IClientLeafSystemEngine, public IGameSystemPerFrame
 {
 public:
+
+	struct RenderableInfo_t
+	{
+		IClientRenderable*	m_pRenderable;
+		CClientAlphaProperty *m_pAlphaProperty;
+		int					m_EnumCount;				// Have I been added to a particular shadow yet?
+		int					m_nRenderFrame;
+		unsigned short		m_FirstShadow;				// The first shadow caster that cast on it
+		unsigned short		m_LeafList;					// What leafs is it in?
+		short				m_Area;						// -1 if the renderable spans multiple areas.
+		uint16				m_Flags : 10;				// rendering flags
+		uint16				m_bDisableFlashlightShadows : 1;  // should we not cast shadows from a flashlight?
+		uint16				m_nSplitscreenEnabled : 2;	// splitscreen rendering flags
+		uint16				m_nTranslucencyType : 2;	// RenderableTranslucencyType_t
+		uint16				m_nModelType : 2;			// RenderableModelType_t
+		Vector				m_vecBloatedAbsMins;		// Use this for tree insertion
+		Vector				m_vecBloatedAbsMaxs;
+		Vector				m_vecAbsMins;			// NOTE: These members are not threadsafe!!
+		Vector				m_vecAbsMaxs;			// They can be updated from any viewpoint (based on RENDER_FLAGS_BOUNDS_VALID)
+	};
+
+	struct BuildRenderListInfo_t
+	{
+		Vector	m_vecMins;
+		Vector	m_vecMaxs;
+		short	m_nArea;
+		uint8	m_nAlpha;
+		bool	m_bPerformOcclusionTest : 1;
+		bool	m_bIgnoreZBuffer : 1;
+	};
+
 	// Adds and removes renderables from the leaf lists
 	virtual void AddRenderable( IClientRenderable* pRenderable, bool bRenderWithViewModels, RenderableTranslucencyType_t nType, RenderableModelType_t nModelType, uint32 nSplitscreenEnabled = 0xFFFFFFFF ) = 0;
 
@@ -229,7 +265,11 @@ public:
 	virtual void RenderableChanged( ClientRenderHandle_t handle ) = 0;
 
 	// Put renderables into their appropriate lists.
-	virtual void BuildRenderablesList( const SetupRenderInfo_t &info ) = 0;
+	// virtual void BuildRenderablesList( const SetupRenderInfo_t &info ) = 0;
+	virtual void BuildRenderablesList( CachedRenderInfo_t* cachedInfo ) = 0;
+
+	// VR Addition
+	virtual void AddRenderablesToRenderLists( const SetupRenderInfo_t &info, int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo, int nDetailCount, DetailRenderableInfo_t *pDetailInfo ) = 0;
 
 	// Put renderables in the leaf into their appropriate lists.
 	virtual void CollateViewModelRenderables( CViewModelRenderablesList *pList ) = 0;
@@ -294,6 +334,29 @@ public:
 
 	//Assuming the renderable would be in a properly built render list, generate a render list entry
 	virtual RenderGroup_t GenerateRenderListEntry( IClientRenderable *pRenderable, CClientRenderablesList::CEntry &entryOut ) = 0; 
+};
+
+// VR HACK
+struct DetailRenderableInfo_t
+{
+	IClientRenderable *m_pRenderable;
+	int m_nLeafIndex;
+	RenderGroup_t m_nRenderGroup;
+	RenderableInstance_t m_InstanceData;
+};
+
+
+struct CachedRenderInfo_t
+{
+	~CachedRenderInfo_t();
+
+	SetupRenderInfo_t* setupInfo;
+	int nCount;
+	IClientLeafSystem::RenderableInfo_t **ppRenderables;
+	IClientLeafSystem::BuildRenderListInfo_t *pRLInfo;
+	int nDetailCount;
+	CUtlVectorFixedGrowable< DetailRenderableInfo_t, 2048 > *pDetailInfo;
+	CUtlVectorFixedGrowable< IClientLeafSystem::RenderableInfo_t *, 2048 > *orderedList;
 };
 
 

@@ -26,6 +26,7 @@
 #include "viewrender.h"
 #include "clientalphaproperty.h"
 #include "con_nprint.h"
+#include "vr_renderer.h"
 //#include "tier0/miniprofiler.h" 
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -60,6 +61,22 @@ static void FrameLock()
 static void FrameUnlock()
 {
 	mdlcache->EndLock();
+}
+
+
+CachedRenderInfo_t::~CachedRenderInfo_t()
+{
+	if ( setupInfo )
+		delete setupInfo;
+
+	if ( pRLInfo )
+		delete pRLInfo;
+
+	if ( pDetailInfo )
+		delete pDetailInfo;
+
+	if ( orderedList )
+		delete orderedList;
 }
 
 
@@ -119,7 +136,11 @@ public:
 	virtual bool ShouldDrawDetailObjectsInLeaf( int leaf, int frameNumber );
 	virtual void RenderableChanged( ClientRenderHandle_t handle );
 	virtual void CollateViewModelRenderables( CViewModelRenderablesList *pList );
-	virtual void BuildRenderablesList( const SetupRenderInfo_t &info );
+
+	// VR
+	// virtual void BuildRenderablesList( const SetupRenderInfo_t &info );
+	virtual void BuildRenderablesList( CachedRenderInfo_t* cachedInfo );
+
 	virtual void DrawStaticProps( bool enable );
 	virtual void DrawSmallEntities( bool enable );
 	virtual void EnableAlternateSorting( ClientRenderHandle_t handle, bool bEnable );
@@ -184,7 +205,7 @@ private:
 	};
 
 	// All the information associated with a particular handle
-	struct RenderableInfo_t
+	/*struct RenderableInfo_t
 	{
 		IClientRenderable*	m_pRenderable;
 		CClientAlphaProperty *m_pAlphaProperty;
@@ -202,7 +223,7 @@ private:
 		Vector				m_vecBloatedAbsMaxs;
 		Vector				m_vecAbsMins;			// NOTE: These members are not threadsafe!!
 		Vector				m_vecAbsMaxs;			// They can be updated from any viewpoint (based on RENDER_FLAGS_BOUNDS_VALID)
-	};
+	};*/
 
 	// The leaf contains an index into a list of renderables
 	struct ClientLeaf_t
@@ -238,7 +259,7 @@ private:
 		ClientRenderHandle_t handle;
 	};
 
-	struct BuildRenderListInfo_t
+	/*struct BuildRenderListInfo_t
 	{
 		Vector	m_vecMins;
 		Vector	m_vecMaxs;
@@ -246,7 +267,7 @@ private:
 		uint8	m_nAlpha;
 		bool	m_bPerformOcclusionTest : 1;
 		bool	m_bIgnoreZBuffer : 1;
-	};
+	};*/
 
 	struct AlphaInfo_t
 	{
@@ -296,7 +317,7 @@ private:
 	void ComputeBounds( int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo );
 	int ExtractCulledRenderables( int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo );
 	int ExtractOccludedRenderables( int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo );
-	void AddRenderablesToRenderLists( const SetupRenderInfo_t &info, int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo, int nDetailCount, DetailRenderableInfo_t *pDetailInfo );
+	virtual void AddRenderablesToRenderLists( const SetupRenderInfo_t &info, int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo, int nDetailCount, DetailRenderableInfo_t *pDetailInfo );
 	void AddDependentRenderables( const SetupRenderInfo_t &info );
 
 	int ComputeTranslucency( int nFrameNumber, int nViewID, int nCount, RenderableInfo_t **ppRenderables, BuildRenderListInfo_t *pRLInfo );
@@ -668,7 +689,12 @@ void CClientLeafSystem::PreRender()
 	// At the moment, it's necessary because of the horrid viewmodel/combatweapon
 	// confusion in the code where a combat weapon changes its rendering model
 	// per view.
-	RecomputeRenderableLeaves();
+
+	// VR: im assuming we don't need this for in vr, right?
+	if ( !DrawingVREyes() )
+	{
+		RecomputeRenderableLeaves();
+	}
 }
 
 // Use this to make sure we're not adding the same renderables to the list while we're going through and re-inserting them into the clientleafsystem
@@ -2585,29 +2611,35 @@ static ConVar r_drawallrenderables( "r_drawallrenderables", "0", FCVAR_CHEAT, "D
 //-----------------------------------------------------------------------------
 // Main entry point to build renderable lists
 //-----------------------------------------------------------------------------
-void CClientLeafSystem::BuildRenderablesList( const SetupRenderInfo_t &info )
+void CClientLeafSystem::BuildRenderablesList( CachedRenderInfo_t* cachedInfo )
 {
 	ASSERT_NO_REENTRY();
 
 	// Deal with detail objects
-	CUtlVectorFixedGrowable< DetailRenderableInfo_t, 2048 > detailRenderables( 2048 );
+	// CUtlVectorFixedGrowable< DetailRenderableInfo_t, 2048 > detailRenderables( 2048 );
+	cachedInfo->pDetailInfo = new CUtlVectorFixedGrowable< DetailRenderableInfo_t, 2048 >( 2048 );
+	CUtlVectorFixedGrowable< DetailRenderableInfo_t, 2048 > &detailRenderables = *cachedInfo->pDetailInfo;
+
+	SetupRenderInfo_t info = *cachedInfo->setupInfo;
 
 	// Get the fade information for detail objects
 	float flDetailDist = g_pDetailObjectSystem->ComputeDetailFadeInfo( &info.m_pRenderList->m_DetailFade );
 	g_pDetailObjectSystem->BuildRenderingData( detailRenderables, info, flDetailDist, info.m_pRenderList->m_DetailFade );
 
 	// First build a non-unique list of renderables, separated by special leaf markers
-	CUtlVectorFixedGrowable< RenderableInfo_t *, 2048 > orderedList( 2048 );
+	// CUtlVectorFixedGrowable< RenderableInfo_t *, 2048 > orderedList( 2048 );
+	cachedInfo->orderedList = new CUtlVectorFixedGrowable< RenderableInfo_t *, 2048 >( 2048 );
 
 	if ( info.m_nViewID != VIEW_3DSKY && r_drawallrenderables.GetBool() )
 	{
 		// HACK - treat all renderables as being in first visible leaf
 		int leaf = info.m_pWorldListInfo->m_pLeafDataList[ 0 ].leafIndex;
-		orderedList.AddToTail( LeafToMarker( leaf ) );
+		// orderedList.AddToTail( LeafToMarker( leaf ) );
+		cachedInfo->orderedList->AddToTail( LeafToMarker( leaf ) );
 
 		for ( int i = m_Renderables.Head(); i != m_Renderables.InvalidIndex(); i = m_Renderables.Next( i ) )
 		{
-			orderedList.AddToTail( &m_Renderables[ i ] );
+			cachedInfo->orderedList->AddToTail( &m_Renderables[ i ] );
 		}
 	}
 	else
@@ -2616,20 +2648,20 @@ void CClientLeafSystem::BuildRenderablesList( const SetupRenderInfo_t &info )
 		for ( int i = 0; i < info.m_pWorldListInfo->m_LeafCount; ++i )
 		{
 			leaf = info.m_pWorldListInfo->m_pLeafDataList[i].leafIndex;
-			orderedList.AddToTail( LeafToMarker( leaf ) );
+			cachedInfo->orderedList->AddToTail( LeafToMarker( leaf ) );
 
 			// iterate over all elements in this leaf
 			unsigned short idx = m_RenderablesInLeaf.FirstElement(leaf);
 			for ( ; idx != m_RenderablesInLeaf.InvalidIndex(); idx = m_RenderablesInLeaf.NextElement( idx ) )
 			{
-				orderedList.AddToTail( &m_Renderables[ m_RenderablesInLeaf.Element(idx) ] );
+				cachedInfo->orderedList->AddToTail( &m_Renderables[ m_RenderablesInLeaf.Element(idx) ] );
 			}
 		}
 	}
 
 	// Debugging
-	int nCount = orderedList.Count();
-	RenderableInfo_t **ppRenderables = orderedList.Base();
+	int nCount = cachedInfo->orderedList->Count();
+	RenderableInfo_t **ppRenderables = cachedInfo->orderedList->Base();
 	nCount = ExtractDuplicates( info.m_nRenderFrame, nCount, ppRenderables );
 	nCount = ExtractStaticProps( nCount, ppRenderables );
 	nCount = ExtractSplitscreenRenderables( nCount, ppRenderables );
@@ -2639,7 +2671,8 @@ void CClientLeafSystem::BuildRenderablesList( const SetupRenderInfo_t &info )
 		nCount = ExtractTranslucentRenderables( nCount, ppRenderables );
 	}
 
-	BuildRenderListInfo_t* pRLInfo = (BuildRenderListInfo_t*)stackalloc( nCount * sizeof(BuildRenderListInfo_t) );
+	// BuildRenderListInfo_t* pRLInfo = (BuildRenderListInfo_t*)stackalloc( nCount * sizeof(BuildRenderListInfo_t) );
+	BuildRenderListInfo_t* pRLInfo = new BuildRenderListInfo_t[nCount];
 	ComputeBounds( nCount, ppRenderables, pRLInfo );
 
 	nCount = ExtractCulledRenderables( nCount, ppRenderables, pRLInfo );
@@ -2657,7 +2690,11 @@ void CClientLeafSystem::BuildRenderablesList( const SetupRenderInfo_t &info )
 	nCount = ExtractOccludedRenderables( nCount, ppRenderables, pRLInfo );
 
 	AddRenderablesToRenderLists( info, nCount, ppRenderables, pRLInfo, detailRenderables.Count(), detailRenderables.Base() );
-	stackfree( pRLInfo );
+
+	cachedInfo->nCount = nCount;
+	cachedInfo->ppRenderables = ppRenderables;
+	cachedInfo->pRLInfo = pRLInfo;
+	cachedInfo->nDetailCount = detailRenderables.Count();
 }
 
 

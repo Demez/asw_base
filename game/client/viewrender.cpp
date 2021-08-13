@@ -264,187 +264,93 @@ CON_COMMAND( r_cheapwaterend,  "" )
 }
 
 
-
-
-
-
-//-----------------------------------------------------------------------------
-// Describes a pruned set of leaves to be rendered this view. Reference counted
-// because potentially shared by a number of views
-//-----------------------------------------------------------------------------
-struct ClientWorldListInfo_t : public CRefCounted1<WorldListInfo_t>
-{
-	ClientWorldListInfo_t() 
-	{ 
-		memset( (WorldListInfo_t *)this, 0, sizeof(WorldListInfo_t) ); 
-		m_pOriginalLeafIndex = NULL;
-		m_bPooledAlloc = false;
-	}
-
-	// Allocate a list intended for pruning
-	static ClientWorldListInfo_t *AllocPooled( const ClientWorldListInfo_t &exemplar );
-
-	// Because we remap leaves to eliminate unused leaves, we need a remap
-	// when drawing translucent surfaces, which requires the *original* leaf index
-	// using m_pOriginalLeafIndex[ remapped leaf index ] == actual leaf index
-	uint16 *m_pOriginalLeafIndex;
-
-private:
-	virtual bool OnFinalRelease();
-
-	bool m_bPooledAlloc;
-	static CObjectPool<ClientWorldListInfo_t> gm_Pool;
-};
+ClientWorldListInfo_t::ClientWorldListInfo_t() 
+{ 
+	memset( (WorldListInfo_t *)this, 0, sizeof(WorldListInfo_t) ); 
+	m_pOriginalLeafIndex = NULL;
+	m_bPooledAlloc = false;
+}
 
 
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
 
-class CWorldListCache
+CWorldListCache::CWorldListCache()
 {
-public:
-	CWorldListCache()
-	{
 
+}
+
+
+void CWorldListCache::Flush()
+{
+	for ( int i = m_Entries.FirstInorder(); i != m_Entries.InvalidIndex(); i = m_Entries.NextInorder( i ) )
+	{
+		delete m_Entries[i];
 	}
-	void Flush()
+	m_Entries.RemoveAll();
+}
+
+
+bool CWorldListCache::Find( const CViewSetup &viewSetup, IWorldRenderList **ppList, ClientWorldListInfo_t **ppListInfo )
+{
+	Entry_t lookup( viewSetup );
+
+	int i = m_Entries.Find( &lookup );
+
+	if ( i != m_Entries.InvalidIndex() )
 	{
-		for ( int i = m_Entries.FirstInorder(); i != m_Entries.InvalidIndex(); i = m_Entries.NextInorder( i ) )
-		{
-			delete m_Entries[i];
-		}
-		m_Entries.RemoveAll();
-	}
-
-	bool Find( const CViewSetup &viewSetup, IWorldRenderList **ppList, ClientWorldListInfo_t **ppListInfo )
-	{
-		Entry_t lookup( viewSetup );
-
-		int i = m_Entries.Find( &lookup );
-
-		if ( i != m_Entries.InvalidIndex() )
-		{
-			Entry_t *pEntry = m_Entries[i];
-			*ppList = InlineAddRef( pEntry->pList );
-			*ppListInfo = InlineAddRef( pEntry->pListInfo );
-			return true;
-		}
-
-		return false;
+		Entry_t *pEntry = m_Entries[i];
+		*ppList = InlineAddRef( pEntry->pList );
+		*ppListInfo = InlineAddRef( pEntry->pListInfo );
+		return true;
 	}
 
-	void Add( const CViewSetup &viewSetup, IWorldRenderList *pList, ClientWorldListInfo_t *pListInfo )
-	{
-		m_Entries.Insert( new Entry_t( viewSetup, pList, pListInfo ) );
-	}
+	return false;
+}
 
-private:
-	struct Entry_t
-	{
-		Entry_t( const CViewSetup &viewSetup, IWorldRenderList *pList = NULL, ClientWorldListInfo_t *pListInfo = NULL ) :
-			pList( ( pList ) ? InlineAddRef( pList ) : NULL ),
-			pListInfo( ( pListInfo ) ? InlineAddRef( pListInfo ) : NULL )
-		{
-            // @NOTE (toml 8/18/2006): because doing memcmp, need to fill all of the fields and the padding!
-			memset( &m_bOrtho, 0, offsetof(Entry_t, pList ) - offsetof(Entry_t, m_bOrtho ) );
-			m_bOrtho = viewSetup.m_bOrtho;			
-			m_OrthoLeft = viewSetup.m_OrthoLeft;		
-			m_OrthoTop = viewSetup.m_OrthoTop;
-			m_OrthoRight = viewSetup.m_OrthoRight;
-			m_OrthoBottom = viewSetup.m_OrthoBottom;
-			fov = viewSetup.fov;				
-			origin = viewSetup.origin;					
-			angles = viewSetup.angles;				
-			zNear = viewSetup.zNear;			
-			zFar = viewSetup.zFar;			
-			m_flAspectRatio = viewSetup.m_flAspectRatio;
-			m_bOffCenter = viewSetup.m_bOffCenter;
-			m_flOffCenterTop = viewSetup.m_flOffCenterTop;
-			m_flOffCenterBottom = viewSetup.m_flOffCenterBottom;
-			m_flOffCenterLeft = viewSetup.m_flOffCenterLeft;
-			m_flOffCenterRight = viewSetup.m_flOffCenterRight;
-		}
 
-		~Entry_t()
-		{
-			if ( pList )
-				pList->Release();
-			if ( pListInfo )
-				pListInfo->Release();
-		}
+void CWorldListCache::Add( const CViewSetup &viewSetup, IWorldRenderList *pList, ClientWorldListInfo_t *pListInfo )
+{
+	m_Entries.Insert( new Entry_t( viewSetup, pList, pListInfo ) );
+}
+	
 
-		// The fields from CViewSetup that would actually affect the list
-		float	m_OrthoLeft;		
-		float	m_OrthoTop;
-		float	m_OrthoRight;
-		float	m_OrthoBottom;
-		float	fov;				
-		Vector	origin;					
-		QAngle	angles;				
-		float	zNear;			
-		float	zFar;			
-		float	m_flAspectRatio;
-		float	m_flOffCenterTop;
-		float	m_flOffCenterBottom;
-		float	m_flOffCenterLeft;
-		float	m_flOffCenterRight;
-		bool	m_bOrtho;			
-		bool	m_bOffCenter;
+CWorldListCache::Entry_t::Entry_t( const CViewSetup &viewSetup, IWorldRenderList *pList, ClientWorldListInfo_t *pListInfo ) :
+	pList( ( pList ) ? InlineAddRef( pList ) : NULL ),
+	pListInfo( ( pListInfo ) ? InlineAddRef( pListInfo ) : NULL )
+{
+	// @NOTE (toml 8/18/2006): because doing memcmp, need to fill all of the fields and the padding!
+	memset( &m_bOrtho, 0, offsetof(Entry_t, pList ) - offsetof(Entry_t, m_bOrtho ) );
+	m_bOrtho = viewSetup.m_bOrtho;			
+	m_OrthoLeft = viewSetup.m_OrthoLeft;		
+	m_OrthoTop = viewSetup.m_OrthoTop;
+	m_OrthoRight = viewSetup.m_OrthoRight;
+	m_OrthoBottom = viewSetup.m_OrthoBottom;
+	fov = viewSetup.fov;				
+	origin = viewSetup.origin;					
+	angles = viewSetup.angles;				
+	zNear = viewSetup.zNear;			
+	zFar = viewSetup.zFar;			
+	m_flAspectRatio = viewSetup.m_flAspectRatio;
+	m_bOffCenter = viewSetup.m_bOffCenter;
+	m_flOffCenterTop = viewSetup.m_flOffCenterTop;
+	m_flOffCenterBottom = viewSetup.m_flOffCenterBottom;
+	m_flOffCenterLeft = viewSetup.m_flOffCenterLeft;
+	m_flOffCenterRight = viewSetup.m_flOffCenterRight;
+}
 
-		IWorldRenderList *pList;
-		ClientWorldListInfo_t *pListInfo;
-	};
 
-	class CEntryComparator
-	{
-	public:
-		CEntryComparator( int ) {}
-		bool operator!() const { return false; }
-		bool operator()( const Entry_t *lhs, const Entry_t *rhs ) const 
-		{ 
-			return ( memcmp( lhs, rhs, sizeof(Entry_t) - ( sizeof(Entry_t) - offsetof(Entry_t, pList ) ) ) < 0 );
-		}
-	};
+CWorldListCache::Entry_t::~Entry_t()
+{
+	if ( pList )
+		pList->Release();
+	if ( pListInfo )
+		pListInfo->Release();
+}
 
-	CUtlRBTree<Entry_t *, unsigned short, CEntryComparator> m_Entries;
-};
 
 CWorldListCache g_WorldListCache;
-
-//-----------------------------------------------------------------------------
-// Standard 3d skybox view
-//-----------------------------------------------------------------------------
-class CSkyboxView : public CRendering3dView
-{
-	DECLARE_CLASS( CSkyboxView, CRendering3dView );
-public:
-	CSkyboxView(CViewRender *pMainView) : 
-		CRendering3dView( pMainView ),
-		m_pSky3dParams( NULL )
-	  {
-	  }
-
-	bool			Setup( const CViewSetup &view, int *pClearFlags, SkyboxVisibility_t *pSkyboxVisible );
-	void			Draw();
-
-protected:
-
-#if PORTAL_SUPPORT
-	virtual bool ShouldDrawPortals() { return false; }
-#endif
-
-	virtual SkyboxVisibility_t	ComputeSkyboxVisibility();
-
-	bool			GetSkyboxFogEnable();
-
-	void			Enable3dSkyboxFog( void );
-	void			DrawInternal( view_id_t iSkyBoxViewID = VIEW_3DSKY, bool bInvokePreAndPostRender = true, ITexture *pRenderTarget = NULL );
-
-	sky3dparams_t *	PreRender3dSkyboxWorld( SkyboxVisibility_t nSkyboxVisible );
-
-	sky3dparams_t *m_pSky3dParams;
-};
 
 
 //-----------------------------------------------------------------------------
@@ -3691,6 +3597,10 @@ void CRendering3dView::Setup( const CViewSetup &setup )
 //-----------------------------------------------------------------------------
 void CRendering3dView::ReleaseLists()
 {
+	// VR Testing:
+	// if ( !FirstEyeRender() )
+	//	return;
+
 	SafeRelease( m_pWorldRenderList );
 	SafeRelease( m_pRenderablesList );
 	SafeRelease( m_pWorldListInfo );
@@ -3721,24 +3631,43 @@ void CRendering3dView::SetupRenderablesList( int viewID )
 	m_pMainView->IncRenderablesListsNumber();
 
 	// Precache information used commonly in CollateRenderables
-	SetupRenderInfo_t setupInfo;
-	setupInfo.m_pWorldListInfo = m_pWorldListInfo;
-	setupInfo.m_nRenderFrame = m_pMainView->BuildRenderablesListsNumber();	// only one incremented?
-	setupInfo.m_nDetailBuildFrame = m_pMainView->BuildWorldListsNumber();	//
-	setupInfo.m_pRenderList = m_pRenderablesList;
-	setupInfo.m_bDrawDetailObjects = GetClientMode()->ShouldDrawDetailObjects() && r_DrawDetailProps.GetInt();
-	setupInfo.m_bDrawTranslucentObjects = ( r_flashlightdepth_drawtranslucents.GetBool() || (viewID != VIEW_SHADOW_DEPTH_TEXTURE) || m_bRenderFlashlightDepthTranslucents );
-	setupInfo.m_nViewID = viewID;
-	setupInfo.m_vecRenderOrigin = origin;
-	setupInfo.m_vecRenderForward = CurrentViewForward();
 
-	float fMaxDist = cl_maxrenderable_dist.GetFloat();
+	m_renderInfo = g_VRRenderer.CreateRenderInfo();
 
-	// Shadowing light typically has a smaller farz than cl_maxrenderable_dist
-	setupInfo.m_flRenderDistSq = (viewID == VIEW_SHADOW_DEPTH_TEXTURE) ? MIN(zFar, fMaxDist) : fMaxDist;
-	setupInfo.m_flRenderDistSq *= setupInfo.m_flRenderDistSq;
+	if ( FirstEyeRender() )
+	{
+		SetupRenderInfo_t &setupInfo = *m_renderInfo->setupInfo;
 
-	ClientLeafSystem()->BuildRenderablesList( setupInfo );
+		setupInfo.m_pWorldListInfo = m_pWorldListInfo;
+		setupInfo.m_nRenderFrame = m_pMainView->BuildRenderablesListsNumber();	// only one incremented?
+		setupInfo.m_nDetailBuildFrame = m_pMainView->BuildWorldListsNumber();	//
+		setupInfo.m_pRenderList = m_pRenderablesList;
+		setupInfo.m_bDrawDetailObjects = GetClientMode()->ShouldDrawDetailObjects() && r_DrawDetailProps.GetInt();
+		setupInfo.m_bDrawTranslucentObjects = ( r_flashlightdepth_drawtranslucents.GetBool() || (viewID != VIEW_SHADOW_DEPTH_TEXTURE) || m_bRenderFlashlightDepthTranslucents );
+		setupInfo.m_nViewID = viewID;
+		setupInfo.m_vecRenderOrigin = origin;
+		setupInfo.m_vecRenderForward = CurrentViewForward();
+
+		float fMaxDist = cl_maxrenderable_dist.GetFloat();
+
+		// Shadowing light typically has a smaller farz than cl_maxrenderable_dist
+		setupInfo.m_flRenderDistSq = (viewID == VIEW_SHADOW_DEPTH_TEXTURE) ? MIN(zFar, fMaxDist) : fMaxDist;
+		setupInfo.m_flRenderDistSq *= setupInfo.m_flRenderDistSq;
+
+		ClientLeafSystem()->BuildRenderablesList( m_renderInfo );
+	}
+	else
+	{
+		// i hope this isn't slow too
+		// if this is the actual slow part, then what the fuck
+		ClientLeafSystem()->AddRenderablesToRenderLists(
+			*m_renderInfo->setupInfo,
+			m_renderInfo->nCount,
+			m_renderInfo->ppRenderables,
+			m_renderInfo->pRLInfo,
+			m_renderInfo->nDetailCount,
+			m_renderInfo->pDetailInfo->Base() );
+	}
 }
 
 
@@ -3750,6 +3679,13 @@ void CRendering3dView::BuildWorldRenderLists( bool bDrawEntities, int iForceView
 	bool bUseCacheIfEnabled /* = true */, bool bShadowDepth /* = false */, float *pReflectionWaterHeight /*= NULL*/ )
 {
 	VPROF_BUDGET( "BuildWorldRenderLists", VPROF_BUDGETGROUP_WORLD_RENDERING );
+
+	// VR testing
+	// can't do this, it crashes right now
+	/*if ( !FirstEyeRender() )
+	{
+		return;
+	}*/
 
     // @MULTICORE (toml 8/18/2006): to address....
 	extern void UpdateClientRenderableInPVSStatus();
@@ -3845,6 +3781,13 @@ static inline void UpdateBrushModelLightmap( IClientRenderable *pEnt )
 void CRendering3dView::BuildRenderableRenderLists( int viewID )
 {
 	MDLCACHE_CRITICAL_SECTION();
+
+	// VR testing: this does eat up a lot of performance, but in theory, we don't need to do this for each eye, right?
+	// this does work, but has a weird side effect of stuff being drawn in the skybox instead
+	/*if ( !FirstEyeRender() )
+	{
+		return;
+	}*/
 
 	if ( viewID != VIEW_SHADOW_DEPTH_TEXTURE )
 	{
@@ -5092,6 +5035,13 @@ void CRendering3dView::SetFogVolumeState( const VisibleFogVolumeInfo_t &fogInfo,
 //-----------------------------------------------------------------------------
 // Standard 3d skybox view
 //-----------------------------------------------------------------------------
+CSkyboxView::CSkyboxView(CViewRender *pMainView) : 
+	CRendering3dView( pMainView ),
+	m_pSky3dParams( NULL )
+{
+}
+
+
 SkyboxVisibility_t CSkyboxView::ComputeSkyboxVisibility()
 {
 	return engine->IsSkyboxVisibleFromPoint( origin );
@@ -5750,6 +5700,12 @@ void CBaseWorldView::PopView()
 //-----------------------------------------------------------------------------
 void CBaseWorldView::DrawSetup( float waterHeight, int nSetupFlags, float waterZAdjust, int iForceViewLeaf )
 {
+	// VR testing
+	/*if ( !FirstEyeRender() )
+	{
+		return;
+	}*/
+
 	int savedViewID = g_CurrentViewID;
 	g_CurrentViewID = VIEW_ILLEGAL;
 

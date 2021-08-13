@@ -754,7 +754,7 @@ C_BaseAnimating::C_BaseAnimating() :
 	m_isJiggleBonesEnabled = true;
 	AddToEntityList(ENTITY_LIST_SIMULATE);
 
-	m_flashlightMgr = new CFlashlightEffectManager;
+	m_flashlightMgr = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -790,7 +790,8 @@ C_BaseAnimating::~C_BaseAnimating()
 		m_pJiggleBones = NULL;
 	}
 
-	delete m_flashlightMgr;
+	if ( m_flashlightMgr )
+		delete m_flashlightMgr;
 }
 
 int C_BaseAnimating::GetRenderFlags( void )
@@ -5351,13 +5352,19 @@ bool C_BaseAnimating::Simulate()
 	}
 
 	// hmm
-	if ( m_flashlightMgr )
+	if ( LookupAttachment( "muzzle" ) != -1 )
 	{
 		Vector muzzlePos;
 		QAngle muzzleAng;
 		Vector muzzleForward, muzzleRight, muzzleUp;
-		if ( LookupAttachment( "muzzle" ) != -1 && GetAttachment( LookupAttachment( "muzzle" ), muzzlePos, muzzleAng ) )
+
+		if ( GetAttachment( LookupAttachment( "muzzle" ), muzzlePos, muzzleAng ) )
 		{
+			if ( m_flashlightMgr == NULL )
+			{
+				m_flashlightMgr = new CFlashlightEffectManager;
+			}
+
 			AngleVectors( muzzleAng, &muzzleForward, &muzzleRight, &muzzleUp );
 			m_flashlightMgr->UpdateFlashlight( muzzlePos - muzzleForward * 4, muzzleForward, muzzleRight, muzzleUp, 60, true, 500, 0/*, "effects/flashlight001"*/ );
 		}

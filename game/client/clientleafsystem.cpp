@@ -64,8 +64,38 @@ static void FrameUnlock()
 }
 
 
+CachedRenderInfo_t::CachedRenderInfo_t()
+{
+	setupInfo = NULL;
+	pRLInfo = NULL;
+	pDetailInfo = NULL;
+	orderedList = NULL;
+
+	m_pWorldRenderList = NULL;
+	m_pRenderablesList = NULL;
+	m_pWorldListInfo = NULL;
+}
+
+
 CachedRenderInfo_t::~CachedRenderInfo_t()
 {
+	// setupInfo->m_pWorldListInfo = NULL;
+	// setupInfo->m_pRenderList = NULL;
+
+	// SafeRelease( m_pWorldRenderList );
+	// SafeRelease( m_pRenderablesList );
+	// SafeRelease( m_pWorldListInfo );
+
+	if ( m_pWorldRenderList )
+		m_pWorldRenderList->Release();
+
+	// does nothing?
+	if ( m_pRenderablesList )
+		m_pRenderablesList->Release();
+
+	if ( m_pWorldListInfo )
+		m_pWorldListInfo->Release();
+
 	if ( setupInfo )
 		delete setupInfo;
 

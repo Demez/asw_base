@@ -3573,7 +3573,8 @@ CRendering3dView::CRendering3dView(CViewRender *pMainView) :
 	m_pWorldListInfo( NULL ), 
 	m_pCustomVisibility( NULL ),
 	m_DrawFlags( 0 ),
-	m_ClearFlags( 0 )
+	m_ClearFlags( 0 ),
+	m_renderInfo( NULL )
 {
 }
 
@@ -3589,6 +3590,10 @@ void CRendering3dView::Setup( const CViewSetup &setup )
 
 	m_pRenderablesList = new CClientRenderablesList; 
 	m_pCustomVisibility = NULL;
+
+	m_renderInfo = g_VRRenderer.CreateRenderInfo();
+	m_renderInfo->m_pRenderablesList = m_pRenderablesList;
+	//m_renderInfo->m_pCustomVisibility = m_pCustomVisibility;
 }
 
 
@@ -3597,13 +3602,19 @@ void CRendering3dView::Setup( const CViewSetup &setup )
 //-----------------------------------------------------------------------------
 void CRendering3dView::ReleaseLists()
 {
-	// VR Testing:
-	// if ( !FirstEyeRender() )
+	// if ( FirstEyeRender() )
+	// if ( DrawingVREyes() )
 	//	return;
 
-	SafeRelease( m_pWorldRenderList );
-	SafeRelease( m_pRenderablesList );
-	SafeRelease( m_pWorldListInfo );
+	// mem leak if i don't release these here? wtf
+	// if ( g_VRRenderer.m_totalRenderViews == g_VRRenderer.m_renderViewCount + 1 )
+	if ( true )
+	{
+		SafeRelease( m_pWorldRenderList );
+		SafeRelease( m_pRenderablesList );
+		SafeRelease( m_pWorldListInfo );
+	}
+
 	m_pCustomVisibility = NULL;
 }
 
@@ -3632,8 +3643,6 @@ void CRendering3dView::SetupRenderablesList( int viewID )
 
 	// Precache information used commonly in CollateRenderables
 
-	m_renderInfo = g_VRRenderer.CreateRenderInfo();
-
 	if ( FirstEyeRender() )
 	{
 		SetupRenderInfo_t &setupInfo = *m_renderInfo->setupInfo;
@@ -3658,8 +3667,18 @@ void CRendering3dView::SetupRenderablesList( int viewID )
 	}
 	else
 	{
-		// i hope this isn't slow too
-		// if this is the actual slow part, then what the fuck
+		// VR TODO: could probably make detail rendering more efficient too
+		// it only does one visibility call and that's ListLeavesInSphereWithFlagSet
+		// so it's *probably* cheap enough to call in both eyes
+		// but could be improved to not draw all of those extra detail models when not truly in view
+		
+		// EDIT: this doesn't work, why?
+		/*SetupRenderInfo_t info = *m_renderInfo->setupInfo;
+
+		// Get the fade information for detail objects
+		float flDetailDist = g_pDetailObjectSystem->ComputeDetailFadeInfo( &info.m_pRenderList->m_DetailFade );
+		g_pDetailObjectSystem->BuildRenderingData( *m_renderInfo->pDetailInfo, info, flDetailDist, info.m_pRenderList->m_DetailFade );*/
+
 		ClientLeafSystem()->AddRenderablesToRenderLists(
 			*m_renderInfo->setupInfo,
 			m_renderInfo->nCount,
@@ -3680,16 +3699,24 @@ void CRendering3dView::BuildWorldRenderLists( bool bDrawEntities, int iForceView
 {
 	VPROF_BUDGET( "BuildWorldRenderLists", VPROF_BUDGETGROUP_WORLD_RENDERING );
 
-	// VR testing
-	// can't do this, it crashes right now
-	/*if ( !FirstEyeRender() )
+	if ( !FirstEyeRender() )
 	{
-		return;
-	}*/
+		/*if ( m_renderInfo )
+		{
+			m_pWorldListInfo = m_renderInfo->m_pWorldListInfo;
+			m_pWorldRenderList = m_renderInfo->m_pWorldRenderList;
+		}
+
+		return;*/
+	}
 
     // @MULTICORE (toml 8/18/2006): to address....
 	extern void UpdateClientRenderableInPVSStatus();
-	UpdateClientRenderableInPVSStatus();
+
+	if ( FirstEyeRender() )
+	{
+		UpdateClientRenderableInPVSStatus();
+	}
 
 	Assert( !m_pWorldRenderList && !m_pWorldListInfo);
 
@@ -3712,6 +3739,9 @@ void CRendering3dView::BuildWorldRenderLists( bool bDrawEntities, int iForceView
 			g_WorldListCache.Add( *this, m_pWorldRenderList, m_pWorldListInfo );
 		}
 	}
+
+	// m_renderInfo->m_pWorldRenderList = m_pWorldRenderList;
+	// m_renderInfo->m_pWorldListInfo = m_pWorldListInfo;
 }
 
 
@@ -3766,6 +3796,7 @@ void CRendering3dView::PruneWorldListInfo()
 
 	m_pWorldListInfo->Release();
 	m_pWorldListInfo = pNewInfo;
+	// m_renderInfo->m_pWorldListInfo = pNewInfo;
 }
 
 

@@ -346,8 +346,13 @@ struct DetailRenderableInfo_t
 };
 
 
+struct ClientWorldListInfo_t;
+struct ViewCustomVisibility_t;
+
+
 struct CachedRenderInfo_t
 {
+	CachedRenderInfo_t();
 	~CachedRenderInfo_t();
 
 	SetupRenderInfo_t* setupInfo;
@@ -357,6 +362,12 @@ struct CachedRenderInfo_t
 	int nDetailCount;
 	CUtlVectorFixedGrowable< DetailRenderableInfo_t, 2048 > *pDetailInfo;
 	CUtlVectorFixedGrowable< IClientLeafSystem::RenderableInfo_t *, 2048 > *orderedList;
+
+	// smh my head
+	IWorldRenderList *m_pWorldRenderList;
+	CClientRenderablesList *m_pRenderablesList;
+	ClientWorldListInfo_t *m_pWorldListInfo;
+	ViewCustomVisibility_t *m_pCustomVisibility;
 };
 
 

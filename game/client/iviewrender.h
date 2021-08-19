@@ -16,7 +16,8 @@
 #include "ivrenderview.h"
 
 
-#define MAX_DEPTH_TEXTURE_SHADOWS 1
+// DEMEZ: gonna raise this to 2 for the flashlight and player muzzle flashlight, might drop fps too much if it's at like 16
+#define MAX_DEPTH_TEXTURE_SHADOWS 2
 #define MAX_DEPTH_TEXTURE_HIGHRES_SHADOWS 0
 
 #define MAX_DEPTH_TEXTURE_SHADOWS_TOOLS 8

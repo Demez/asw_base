@@ -720,7 +720,7 @@ void CClientLeafSystem::PreRender()
 	// confusion in the code where a combat weapon changes its rendering model
 	// per view.
 
-	// VR: im assuming we don't need this for in vr, right?
+	// VR: if this is only needed for viewmodels, then we shouldn't need this
 	if ( !DrawingVREyes() )
 	{
 		RecomputeRenderableLeaves();

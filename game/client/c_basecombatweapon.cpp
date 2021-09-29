@@ -495,7 +495,8 @@ void C_BaseCombatWeapon::EnsureCorrectRenderingModel()
 	C_BasePlayer *localplayer = C_BasePlayer::GetLocalPlayer();
 	if ( localplayer && 
 		localplayer == GetOwner() &&
-		ShouldDrawLocalPlayer(localplayer) )
+		// DEMEZ: didn't have ! before, but i must of broke something in order to require this
+		!ShouldDrawLocalPlayer(localplayer) )
 	{
 		return;
 	}

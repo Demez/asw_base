@@ -564,10 +564,10 @@ public:
 
 	
 	IPhysicsConstraint		*GetConstraint() { return m_pConstraint; }
+	IPhysicsConstraint		*m_pConstraint;
 
 private:
 	WEAPON_FILE_INFO_HANDLE	m_hWeaponFileInfo;
-	IPhysicsConstraint		*m_pConstraint;
 
 	int						m_iAltFireHudHintCount;		// How many times has this weapon displayed its alt-fire HUD hint?
 	int						m_iReloadHudHintCount;		// How many times has this weapon displayed its reload HUD hint?

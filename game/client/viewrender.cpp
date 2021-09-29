@@ -3654,7 +3654,16 @@ void CRendering3dView::SetupRenderablesList( int viewID )
 		setupInfo.m_bDrawDetailObjects = GetClientMode()->ShouldDrawDetailObjects() && r_DrawDetailProps.GetInt();
 		setupInfo.m_bDrawTranslucentObjects = ( r_flashlightdepth_drawtranslucents.GetBool() || (viewID != VIEW_SHADOW_DEPTH_TEXTURE) || m_bRenderFlashlightDepthTranslucents );
 		setupInfo.m_nViewID = viewID;
-		setupInfo.m_vecRenderOrigin = origin;
+
+		if ( InVRRender() )
+		{
+			setupInfo.m_vecRenderOrigin = g_VRRenderer.m_viewOrigin;
+		}
+		else
+		{
+			setupInfo.m_vecRenderOrigin = origin;
+		}
+
 		setupInfo.m_vecRenderForward = CurrentViewForward();
 
 		float fMaxDist = cl_maxrenderable_dist.GetFloat();
@@ -5731,12 +5740,6 @@ void CBaseWorldView::PopView()
 //-----------------------------------------------------------------------------
 void CBaseWorldView::DrawSetup( float waterHeight, int nSetupFlags, float waterZAdjust, int iForceViewLeaf )
 {
-	// VR testing
-	/*if ( !FirstEyeRender() )
-	{
-		return;
-	}*/
-
 	int savedViewID = g_CurrentViewID;
 	g_CurrentViewID = VIEW_ILLEGAL;
 

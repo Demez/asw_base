@@ -5352,13 +5352,14 @@ bool C_BaseAnimating::Simulate()
 	}
 
 	// hmm
-	if ( LookupAttachment( "muzzle" ) != -1 )
+	int muzzleAttachment = LookupAttachment( "muzzle" );
+	if ( muzzleAttachment != -1 )
 	{
 		Vector muzzlePos;
 		QAngle muzzleAng;
 		Vector muzzleForward, muzzleRight, muzzleUp;
 
-		if ( GetAttachment( LookupAttachment( "muzzle" ), muzzlePos, muzzleAng ) )
+		if ( GetAttachment( muzzleAttachment, muzzlePos, muzzleAng ) )
 		{
 			if ( m_flashlightMgr == NULL )
 			{

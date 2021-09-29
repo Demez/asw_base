@@ -42,6 +42,9 @@
 #include "decals.h"
 #include "obstacle_pushaway.h"
 
+// why
+#include "vr_player_shared.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1563,7 +1566,12 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 	if ( !prediction->InPrediction() )
 #endif
 	{
+		float viewOffset = eyeOrigin.z;
 		SmoothViewOnStairs( eyeOrigin );
+		viewOffset += -eyeOrigin.z;
+
+		// why
+		((CVRBasePlayerShared*)this)->m_smoothStairsOffset;
 	}
 
 	// Snack off the origin before bob + water offset are applied

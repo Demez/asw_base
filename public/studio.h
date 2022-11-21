@@ -69,7 +69,7 @@ struct studiohdr_t;
 #else
 #define MAXSTUDIOTRIANGLES	65536	// TODO: tune this
 #define MAXSTUDIOVERTS		65536	// TODO: tune this
-#define	MAXSTUDIOFLEXVERTS	65536   // 10000	// max number of verts that can be flexed per mesh.  TODO: tune this
+#define	MAXSTUDIOFLEXVERTS	65536   // DEMEZ: was 10000	// max number of verts that can be flexed per mesh.  TODO: tune this
 #endif
 #define MAXSTUDIOSKINS		32		// total textures
 #define MAXSTUDIOBONES		128		// total bones actually used

@@ -476,12 +476,14 @@ void ClientModeShared::OnColorCorrectionWeightsReset( void )
 {
 }
 
+ConVar mat_colorcorrection_scale( "mat_colorcorrection_scale", "1", FCVAR_NONE );
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 float ClientModeShared::GetColorCorrectionScale( void ) const
 {
-	return 0.0f;
+	return mat_colorcorrection_scale.GetFloat();
 }
 
 //-----------------------------------------------------------------------------

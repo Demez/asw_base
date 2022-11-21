@@ -27,6 +27,7 @@
 #include "responserules/response_host_interface.h"
 #include "../../responserules/runtime/response_types_internal.h"
 
+#include "choreoscene.h"
 #include "scenefilecache/ISceneFileCache.h"
 
 #ifdef GAME_DLL
@@ -302,9 +303,44 @@ void PrecacheInstancedScene( char const *pszScene )
 		g_pFullFileSystem->Size( pszScene );
 	}
 
-	// verify existence, cache is pre-populated, should be there
 	SceneCachedData_t sceneData;
-	if ( !scenefilecache->GetSceneCachedData( pszScene, &sceneData ) )
+
+	char loadfile[MAX_PATH];
+	Q_strncpy( loadfile, pszScene, sizeof( loadfile ) );
+	Q_SetExtension( loadfile, ".vcd", sizeof( loadfile ) );
+	Q_FixSlashes( loadfile );
+
+	// Attempt to precache manually
+	void *pBuffer = NULL;
+	if (filesystem->ReadFileEx( loadfile, "GAME", &pBuffer, true, true ))
+	{
+		g_TokenProcessor.SetBuffer((char*)pBuffer);
+		CChoreoScene *pScene = ChoreoLoadScene( loadfile, nullptr, &g_TokenProcessor, Scene_Printf );
+		if (pScene)
+		{
+			for ( int i = 0; i < pScene->GetNumEvents(); i++ )
+			{
+				CChoreoEvent *pEvent = pScene->GetEvent(i);
+				if (pEvent && pEvent->GetType() == CChoreoEvent::SPEAK)
+				{
+					CBaseEntity::PrecacheScriptSound( pEvent->GetParameters() );
+
+					// Precache CC token
+					if ( pEvent->GetCloseCaptionType() == CChoreoEvent::CC_MASTER && 
+						pEvent->GetNumSlaves() > 0 )
+					{
+						char tok[ CChoreoEvent::MAX_CCTOKEN_STRING ];
+						if ( pEvent->GetPlaybackCloseCaptionToken( tok, sizeof( tok ) ) )
+						{
+							CBaseEntity::PrecacheScriptSound( tok );
+						}
+					}
+				}
+			}
+		}
+	}
+	// verify existence, cache is pre-populated, should be there
+	else if ( !scenefilecache->GetSceneCachedData( pszScene, &sceneData ) )
 	{
 		// Scenes are sloppy and don't always exist.
 		// A scene that is not in the pre-built cache image, but on disk, is a true error.

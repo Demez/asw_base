@@ -49,6 +49,8 @@ extern const ConVar *sv_cheats;
 bool g_bUpsideDown = false; // Set when the player is upside down in Portal to invert the mouse.
 
 
+ConVar in_rawinput( "in_rawinput", "1", FCVAR_ARCHIVE );
+
 
 class ConVar_m_pitch : public ConVar_ServerBounded
 {
@@ -325,10 +327,23 @@ void CInput::GetAccumulatedMouseDeltasAndResetAccumulators( int nSlot, float *mx
 	Assert( mx );
 	Assert( my );
 
+	static ConVarRef m_rawinput( "m_rawinput" );
+	static bool hasRawInput = m_rawinput.IsValid();
+
 	PerUserInput_t &user = GetPerUser( nSlot );
 
-	*mx = user.m_flAccumulatedMouseXMovement;
-	*my = user.m_flAccumulatedMouseYMovement;
+	if ( hasRawInput && m_rawinput.GetBool() )
+	{
+		int rawMouseX, rawMouseY;
+		inputsystem->GetRawMouseAccumulators(rawMouseX, rawMouseY);
+		*mx = (float)rawMouseX;
+		*my = (float)rawMouseY;
+	}
+	else
+	{
+		*mx = user.m_flAccumulatedMouseXMovement;
+		*my = user.m_flAccumulatedMouseYMovement;
+	}
 
 	user.m_flAccumulatedMouseXMovement = 0;
 	user.m_flAccumulatedMouseYMovement = 0;
@@ -539,6 +554,12 @@ void CInput::AccumulateMouse( int nSlot )
 		return;
 	}
 
+	static ConVarRef m_rawinput( "m_rawinput" );
+	static bool hasRawInput = m_rawinput.IsValid();
+
+	if ( hasRawInput && m_rawinput.GetBool() )
+		return;
+
 	int w, h;
 	engine->GetScreenSize( w, h );
 
@@ -732,5 +753,15 @@ void CInput::ClearStates (void)
 		ACTIVE_SPLITSCREEN_PLAYER_GUARD( hh );
 		GetPerUser().m_flAccumulatedMouseXMovement = 0;
 		GetPerUser().m_flAccumulatedMouseYMovement = 0;
+	}
+
+	static ConVarRef m_rawinput( "m_rawinput" );
+	static bool hasRawInput = m_rawinput.IsValid();
+
+	if ( hasRawInput )
+	{
+		// clear raw mouse accumulated data
+		int rawX, rawY;
+		inputsystem->GetRawMouseAccumulators( rawX, rawY );
 	}
 }

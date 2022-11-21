@@ -648,15 +648,16 @@ void CBasePlayer::UpdateOnRemove( void )
 	VPhysicsDestroyObject();
 
 	// Remove him from his current team
-	if ( GetTeam() )
+	/*if ( GetTeam() )
 	{
-		GetTeam()->RemovePlayer( this );
-	}
+		CTeam* team = GetTeam();
+		team->RemovePlayer( this );
+	}*/
 
-	if ( m_hSplitOwner )
+	/*if ( m_hSplitOwner )
 	{
 		m_hSplitOwner->RemoveSplitScreenPlayer( this );
-	}
+	}*/
 
 	// Chain at end to mimic destructor unwind order
 	BaseClass::UpdateOnRemove();

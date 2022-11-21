@@ -2717,6 +2717,15 @@ void CServerGameClients::ClientDisconnect( edict_t *pEdict )
 {
 	extern bool	g_fGameOver;
 
+	CBaseEntity* ent = CBaseEntity::Instance( pEdict );
+
+	if ( ent && !ent->IsPlayer() )
+	{
+		// um
+		return;
+	}
+
+
 	CBasePlayer *player = ( CBasePlayer * )CBaseEntity::Instance( pEdict );
 	if ( player )
 	{

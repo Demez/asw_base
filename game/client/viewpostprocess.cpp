@@ -70,7 +70,7 @@ ConVar mat_force_bloom("mat_force_bloom","0", FCVAR_CHEAT);
 
 ConVar mat_disable_bloom("mat_disable_bloom","0");
 ConVar mat_debug_bloom("mat_debug_bloom","0", FCVAR_CHEAT);
-ConVar mat_colorcorrection( "mat_colorcorrection", "1", FCVAR_CHEAT );
+ConVar mat_colorcorrection( "mat_colorcorrection_hack", "1", FCVAR_CHEAT );
 
 ConVar mat_accelerate_adjust_exposure_down( "mat_accelerate_adjust_exposure_down", "3.0", FCVAR_CHEAT );
 ConVar mat_hdr_manual_tonemap_rate( "mat_hdr_manual_tonemap_rate", "1.0" );
@@ -844,7 +844,7 @@ void UpdateMaterialSystemTonemapScalar()
 
 void CTonemapSystem::UpdateMaterialSystemTonemapScalar()
 {
-	/*if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
+	if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
 	{
 		// Deal with forced tone map scalar
 		float flForcedTonemapScale = mat_force_tonemap_scale.GetFloat();
@@ -884,7 +884,7 @@ void CTonemapSystem::UpdateMaterialSystemTonemapScalar()
 		CMatRenderContextPtr pRenderContext( materials );
 		pRenderContext->SetToneMappingScaleLinear( Vector( m_flCurrentTonemapScale, m_flCurrentTonemapScale, m_flCurrentTonemapScale ) );
 	}
-	else*/
+	else
 	{
 		// Send 1.0 to the material system since HDR is disabled
 		CMatRenderContextPtr pRenderContext( materials );

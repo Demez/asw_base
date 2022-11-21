@@ -229,14 +229,6 @@ bool CopySceneFileIntoMemory( char const *pFilename, byte **pBuffer, int *pSize 
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void FreeSceneFileMemory( byte *buffer )
-{
-	delete[] buffer;
-}
-
-//-----------------------------------------------------------------------------
 // Binary compiled VCDs get their strings from a pool
 //-----------------------------------------------------------------------------
 class CChoreoStringPool : public IChoreoStringPool
@@ -3484,7 +3476,6 @@ CChoreoScene *CSceneEntity::LoadScene( const char *filename, IChoreoEventCallbac
 	Q_FixSlashes( loadfile );
 
 	void *pBuffer = 0;
-	byte *pBuffer2;
 	CChoreoScene *pScene;
 
 	int fileSize = filesystem->ReadFileEx(loadfile, "GAME", &pBuffer, true);
@@ -3496,15 +3487,14 @@ CChoreoScene *CSceneEntity::LoadScene( const char *filename, IChoreoEventCallbac
 	else
 	{
 		// binary compiled vcd
-		int fileSize;
-		if ( !CopySceneFileIntoMemory( loadfile, &pBuffer2, &fileSize ) )
+		if ( !CopySceneFileIntoMemory( loadfile, (byte**)&pBuffer, &fileSize ) )
 		{
 			MissingSceneWarning( loadfile );
 			return NULL;
 		}
 
 		pScene = new CChoreoScene( NULL );
-		CUtlBuffer buf( pBuffer2, fileSize, CUtlBuffer::READ_ONLY );
+		CUtlBuffer buf( (byte**)pBuffer, fileSize, CUtlBuffer::READ_ONLY );
 		if ( !pScene->RestoreFromBinaryBuffer( buf, loadfile, &g_ChoreoStringPool ) )
 		{
 			Warning( "CSceneEntity::LoadScene: Unable to load binary scene '%s'\n", loadfile );
@@ -3522,10 +3512,6 @@ CChoreoScene *CSceneEntity::LoadScene( const char *filename, IChoreoEventCallbac
 	if ( pBuffer )
 	{
 		delete[] pBuffer;
-	}
-	else
-	{
-		FreeSceneFileMemory( pBuffer2 );
 	}
 
 	return pScene;
